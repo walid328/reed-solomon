@@ -7,6 +7,18 @@ struct
     int *coefficients;
 } typedef poly;
 
+int size_int_str(int n);
+
+void str_add_int(char* string, int *index, int n);
+
+char *string_polynomial_iso_length(poly *q);
+
+char *string_polynomial_minimal(poly *q);
+
+void print_polynomial_iso_length(poly *q);
+
+void print_polynomial_minimal(poly *q);
+
 void print_polynomial(poly *q);
 
 poly *add_polynomials(poly *p1, poly *p2);
