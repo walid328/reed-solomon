@@ -42,7 +42,7 @@ void str_add_int(char *string, int *index, int n)
 	}
 	int size_n = size_int_str(n);
 	for (int i = size_n - 1; i >= 0; i--, n /= 10)
-		string[*index + i] = n % 10;
+		string[*index + i] = '0' + (n % 10);
 	*index += size_n;
 }
 
@@ -51,7 +51,7 @@ char *str_poly_iso_length(poly *q)
 	if (q->degree == -1)
 	{
 		char *poly_string = (char *)malloc(2 * sizeof(char));
-		assert(poly_string != NULL);
+		assert(poly_string);
 		poly_string[0] = '0';
 		poly_string[1] = '\0';
 		return poly_string;
@@ -59,7 +59,7 @@ char *str_poly_iso_length(poly *q)
 	int size_p = size_int_str(p);
 	int size_d = size_int_str(q->degree);
 	char *poly_string = (char *)malloc(((size_p + size_d + 6) * (q->degree + 1) + 1) * sizeof(char));
-	assert(poly_string != NULL);
+	assert(poly_string);
 	int index = 0;
 	for (int i = q->degree; i >= 0; i--)
 	{
@@ -76,7 +76,7 @@ char *str_poly_iso_length(poly *q)
 		index += size_p - size_coeff;
 		str_add_int(poly_string, &index, q->coefficients[i]);
 		poly_string[index + 0] = '*';
-		poly_string[index + 1] = 'X';
+		poly_string[index + 1] = 'x';
 		poly_string[index + 2] = '^';
 		index += 3;
 		str_add_int(poly_string, &index, i);
@@ -94,7 +94,7 @@ char *str_poly_min(poly *q)
 	if (q->degree == -1)
 	{
 		char *poly_string = (char *)malloc(2 * sizeof(char));
-		assert(poly_string != NULL);
+		assert(poly_string);
 		poly_string[0] = '0';
 		poly_string[1] = '\0';
 		return poly_string;
@@ -102,7 +102,7 @@ char *str_poly_min(poly *q)
 	int size_p = size_int_str(p);
 	int size_d = size_int_str(q->degree);
 	char *poly_string = (char *)malloc(((size_p + size_d + 6) * (q->degree + 1) + 1) * sizeof(char));
-	assert(poly_string != NULL);
+	assert(poly_string);
 	int index = 0;
 	for (int i = q->degree; i >= 0; i--)
 	{
@@ -119,7 +119,7 @@ char *str_poly_min(poly *q)
 			if (i > 0)
 			{
 				poly_string[index + 0] = '*';
-				poly_string[index + 1] = 'X';
+				poly_string[index + 1] = 'x';
 				index += 2;
 				if (i > 1)
 				{
@@ -158,9 +158,9 @@ void print_poly(poly *q)
 			printf(" + ");
 		printf("%d", q->coefficients[i]);
 		if (i == 1)
-			printf("*X");
+			printf("*x");
 		if (i > 1)
-			printf("*X^%d", i);
+			printf("*x^%d", i);
 	}
 	printf("\n");
 }
@@ -190,7 +190,7 @@ poly *add_poly(poly *p1, poly *p2)
 	poly *sum = new_poly();
 	if (p1->degree > p2->degree)
 	{
-		int *coefficients = (int *)malloc(p1->degree * sizeof(int));
+		int *coefficients = (int *)malloc((p1->degree + 1) * sizeof(int));
 		assert(coefficients);
 		int i = 0;
 		for (; i <= p2->degree; i++)
@@ -201,7 +201,7 @@ poly *add_poly(poly *p1, poly *p2)
 	}
 	else if (p1->degree < p2->degree)
 	{
-		int *coefficients = (int *)malloc(p1->degree * sizeof(int));
+		int *coefficients = (int *)malloc((p2->degree + 1) * sizeof(int));
 		assert(coefficients);
 		int i = 0;
 		for (; i <= p1->degree; i++)
@@ -230,7 +230,7 @@ poly *add_poly(poly *p1, poly *p2)
 		else
 		{
 			int degree = i;
-			int *coefficients = (int *)malloc(i * sizeof(int));
+			int *coefficients = (int *)malloc((degree + 1) * sizeof(int));
 			assert(coefficients);
 			for (; i >= 0; i--)
 				coefficients[i] = (p1->coefficients[i] + p2->coefficients[i]) % p;
@@ -243,15 +243,16 @@ poly *add_poly(poly *p1, poly *p2)
 poly *mul_poly(poly *p1, poly *p2)
 {
 	poly *prod = new_poly();
-	if (p1->degree == -1 || p2->degree == 0)
+	if (p1->degree == -1 || p2->degree == -1)
 	{
 		int *coefficient = (int *)calloc(1, sizeof(int));
+		assert(coefficient);
 		set_poly(prod, -1, coefficient);
 	}
 	else
 	{
 		int degree = p1->degree + p2->degree;
-		int *coefficients = (int *)calloc(degree, sizeof(int));
+		int *coefficients = (int *)calloc(degree + 1, sizeof(int));
 		assert(coefficients);
 		for (int i = 0; i <= p1->degree; i++)
 			for (int j = 0; j <= p2->degree; j++)
