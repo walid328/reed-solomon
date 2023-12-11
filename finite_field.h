@@ -1,29 +1,31 @@
 #ifndef FINITE_FIELD_H
 #define FINITE_FIELD_H
 
-struct
-{
-    int degree;
-    int *coefficients;
-} typedef poly;
+typedef struct polynomial poly;
 
 int size_int_str(int n);
 
-void str_add_int(char* string, int *index, int n);
+void str_add_int(char *string, int *index, int n);
 
-char *string_polynomial_iso_length(poly *q);
+char *str_poly_iso_length(poly *q);
 
-char *string_polynomial_minimal(poly *q);
+char *str_poly_min(poly *q);
 
-void print_polynomial_iso_length(poly *q);
+void print_poly_iso_length(poly *q);
 
-void print_polynomial_minimal(poly *q);
+void print_poly_min(poly *q);
 
-void print_polynomial(poly *q);
+void print_poly(poly *q);
 
-poly *add_polynomials(poly *p1, poly *p2);
+poly *new_poly(void);
 
-poly *mul_polynomials(poly *p1, poly *p2);
+void set_poly(poly *q, int degree, int *coefficients);
+
+void free_poly(poly *q);
+
+poly *add_poly(poly *p1, poly *p2);
+
+poly *mul_poly(poly *p1, poly *p2);
 
 void euclid_division(poly *p1, poly *p2, poly *q, poly *r);
 

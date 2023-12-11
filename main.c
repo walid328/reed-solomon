@@ -6,19 +6,23 @@
 int main(int argc, char **argv)
 {
 
-    int coeff_p1[] = {0, 3, 4};
-    int coeff_p2[] = {0, 3, 1};
+    int coeff_p1[] = {5, 4, 3};
+    int coeff_p2[] = {1, 3, 2};
 
-    poly *p1 = (poly *)malloc(sizeof(poly));
-    p1->degree = 2;
-    p1->coefficients = coeff_p1;
-    poly *p2 = (poly *)malloc(sizeof(poly));
-    p2->degree = 2;
-    p2->coefficients = coeff_p2;
-    poly *sum = add_polynomials(p1, p2);
-    free(p1);
-    free(p2);
-    print_polynomial(sum);
-    free(sum);
+    poly *p1 = new_poly();
+    set_poly(p1, 2, coeff_p1);
+    poly *p2 = new_poly();
+    set_poly(p2, 2, coeff_p2);
+
+    poly *sum = add_poly(p1, p2);
+    print_poly(sum);
+
+    poly *prod = mul_poly(p1, p2);
+    print_poly(prod);
+
+    free_poly(p1);
+    free_poly(p2);
+    free_poly(sum);
+    free_poly(prod);
     return EXIT_SUCCESS;
 }
