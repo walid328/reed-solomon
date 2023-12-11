@@ -233,10 +233,7 @@ poly *add_poly(poly *p1, poly *p2)
 			int *coefficients = (int *)malloc(i * sizeof(int));
 			assert(coefficients);
 			for (; i >= 0; i--)
-			{
 				coefficients[i] = (p1->coefficients[i] + p2->coefficients[i]) % p;
-				printf("%d\n", coefficients[i]);
-			}
 			set_poly(sum, degree, coefficients);
 		}
 	}
