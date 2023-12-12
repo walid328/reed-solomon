@@ -187,6 +187,15 @@ void set_poly(poly *q, int degree, int *coefficients)
 
 void free_poly(poly *q)
 {
+	assert(q);
+	free(q);
+}
+
+void free_poly_full(poly *q)
+{
+	assert(q);
+	assert(q->coefficients);
+	free(q->coefficients);
 	free(q);
 }
 

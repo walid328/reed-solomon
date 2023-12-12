@@ -23,6 +23,8 @@ void set_poly(poly *q, int degree, int *coefficients);
 
 void free_poly(poly *q);
 
+void free_poly_full(poly *q);
+
 poly *add_poly(poly *p1, poly *p2);
 
 poly *mul_poly(poly *p1, poly *p2);
