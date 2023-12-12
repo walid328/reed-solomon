@@ -61,9 +61,9 @@ char *str_poly_iso_length(poly *q)
 	char *poly_string = (char *)malloc(((size_p + size_d + 6) * (q->degree + 1) + 1) * sizeof(char));
 	assert(poly_string);
 	int index = 0;
-	for (int i = q->degree; i >= 0; i--)
+	for (int i = 0; i <= q->degree; i++)
 	{
-		if (i != q->degree)
+		if (index != 0)
 		{
 			poly_string[index + 0] = ' ';
 			poly_string[index + 1] = '+';
@@ -75,15 +75,20 @@ char *str_poly_iso_length(poly *q)
 			poly_string[index + j] = ' ';
 		index += size_p - size_coeff;
 		str_add_int(poly_string, &index, q->coefficients[i]);
-		poly_string[index + 0] = '*';
-		poly_string[index + 1] = 'x';
-		poly_string[index + 2] = '^';
-		index += 3;
-		str_add_int(poly_string, &index, i);
-		int size_exponant = size_int_str(i);
-		for (int j = 0; j < size_d - size_exponant; j++)
-			poly_string[index + j] = ' ';
-		index += size_d - size_exponant;
+		if (i == 1)
+		{
+			poly_string[index + 0] = '*';
+			poly_string[index + 1] = 'x';
+			index += 2;
+		}
+		if (i > 1)
+		{
+			poly_string[index + 0] = '*';
+			poly_string[index + 1] = 'x';
+			poly_string[index + 2] = '^';
+			index += 3;
+			str_add_int(poly_string, &index, i);
+		}
 	}
 	poly_string[index] = '\0';
 	return poly_string;
@@ -104,11 +109,11 @@ char *str_poly_min(poly *q)
 	char *poly_string = (char *)malloc(((size_p + size_d + 6) * (q->degree + 1) + 1) * sizeof(char));
 	assert(poly_string);
 	int index = 0;
-	for (int i = q->degree; i >= 0; i--)
+	for (int i = 0; i <= q->degree; i++)
 	{
 		if (q->coefficients[i] != 0)
 		{
-			if (i != q->degree)
+			if (index != 0)
 			{
 				poly_string[index + 0] = ' ';
 				poly_string[index + 1] = '+';
@@ -152,9 +157,9 @@ void print_poly(poly *q)
 {
 	if (q->degree == -1)
 		printf("0");
-	for (int i = q->degree; i >= 0; i--)
+	for (int i = 0; i <= q->degree; i++)
 	{
-		if (i != q->degree)
+		if (i != 0)
 			printf(" + ");
 		printf("%d", q->coefficients[i]);
 		if (i == 1)
