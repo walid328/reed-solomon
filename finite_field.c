@@ -440,9 +440,10 @@ poly *xgcd(poly *p1, poly *p2, poly *u, poly *v)
 		euclid_division(r0, r1, q, r2);
 		poly *qu1 = mul_poly(q, u1);
 		poly *u2 = substract_poly(u0, qu1);
-		free_poly_full(qu1);
 		poly *qv1 = mul_poly(q, v1);
 		poly *v2 = substract_poly(v0, qv1);
+		free_poly_full(q);
+		free_poly_full(qu1);
 		free_poly_full(qv1);
 		free_poly_full(u0);
 		free_poly_full(v0);
