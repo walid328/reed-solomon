@@ -19,6 +19,12 @@ void print_poly(poly *q);
 
 poly *new_poly(void);
 
+poly *new_poly_0(void);
+
+poly *new_poly_1(void);
+
+poly *new_poly_from_copy(poly *p);
+
 void set_poly(poly *q, int degree, int *coefficients);
 
 void free_poly(poly *q);
@@ -26,6 +32,8 @@ void free_poly(poly *q);
 void free_poly_full(poly *q);
 
 poly *add_poly(poly *p1, poly *p2);
+
+poly *substract_poly(poly *p1, poly *p2);
 
 poly *mul_poly(poly *p1, poly *p2);
 
