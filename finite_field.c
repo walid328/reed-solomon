@@ -275,3 +275,64 @@ poly *mul_poly(poly *p1, poly *p2)
 	}
 	return prod;
 }
+
+int inverse_zp(int n)
+{
+	int v0 = 0;
+	int r0 = p;
+	int v1 = 1;
+	int r1 = n;
+	while (r1 != 1)
+	{
+		int q = r0 / r1;
+		int v2 = v0 - q * v1;
+		int r2 = r0 - q * r1;
+		v0 = v1;
+		r0 = r1;
+		v1 = v2;
+		r1 = r2;
+	}
+	v1 %= p;
+	if (v1 < 0)
+		v1 = v1 + p;
+	return v1;
+}
+
+void euclid_division(poly *p1, poly *p2, poly *q, poly *r)
+{
+	int *rest = (int *)malloc((p1->degree + 1) * sizeof(int));
+	assert(rest);
+	for (int i = 0; i <= p1->degree; i++)
+		rest[i] = p1->coefficients[i];
+	q->degree = p1->degree - p2->degree;
+	q->coefficients = (int *)calloc(q->degree + 1, sizeof(int));
+	assert(q->coefficients);
+	int rest_degree = p1->degree;
+	int inv_LC_p2 = inverse_zp(p2->coefficients[p2->degree]);
+	while (degree_rest >= p2->degree)
+	{
+		int coefficient = (rest[rest_degree] * inv_LC_p2) % p;
+		q->coefficients[rest_degree - p2->degree] = coefficient;
+		for (int i = 0; i <= p2->degree; i++)
+		{
+			rest[i + rest_degree - p2->degree] -= coefficient * p2->coefficients[i];
+			rest[i + rest_degree - p2->degree] %= p;
+			if (rest[i + rest_degree - p2->degree] < 0)
+				rest[i + rest_degree - p2->degree] += p;
+		}
+		while (rest_degree >= 0 && rest[rest_degree] == 0)
+			rest_degree--;
+	}
+	r->degree = rest_degree;
+	if (r->degree == -1)
+		r->coefficients = (int *)calloc(1, sizeof(int));
+	else
+		r->coefficients = (int *)malloc((r->degree + 1) * sizeof(int));
+	assert(r->coefficients);
+	for (int i = 0; i <= r->degree; i++)
+		r->coefficients[i] = rest[i];
+	free(rest);
+}
+
+
+

@@ -29,6 +29,8 @@ poly *add_poly(poly *p1, poly *p2);
 
 poly *mul_poly(poly *p1, poly *p2);
 
+int inverse_zp(int n);
+
 void euclid_division(poly *p1, poly *p2, poly *q, poly *r);
 
 poly *xgcd(poly *p1, poly *p2, poly *u, poly *v);
