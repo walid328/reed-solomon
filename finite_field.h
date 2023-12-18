@@ -27,6 +27,12 @@ poly *new_poly_1(void);
 
 poly *new_poly_from_copy(poly *source);
 
+int next_coeff(char *str, int *i);
+
+poly *new_poly_from_str(char *str);
+
+poly *new_rand_poly(int deg);
+
 void set_poly(poly *q, int degree, int *coefficients);
 
 void free_poly(poly *q);
@@ -49,6 +55,9 @@ int *multi_evaluate(poly *q, int *a, int n);
 
 // return the inverse of n in Z/pZ
 int inverse_zp(int n);
+
+// return random element in Z/pZ
+int rand_zp();
 
 void euclid_division(poly *p1, poly *p2, poly *q, poly *r);
 

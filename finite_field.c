@@ -196,6 +196,97 @@ poly *new_poly_from_coeffs(int deg, ...)
 	return q;
 }
 
+int next_coeff(char *str, int *i)
+{
+	while (str[*i] != '\0' && str[*i] != '-' && (str[*i] < '0' || str[*i] > '9') && str[*i] != 'x' && str[*i] != 'X')
+		*i += 1;
+	if (str[*i] == '\0')
+	{
+		*i = -10;
+		return -1;
+	}
+	int sign = 1;
+	if (str[*i] == '-')
+	{
+		sign = -1;
+		*i += 1;
+	}
+	while (str[*i] == ' ')
+		*i += 1;
+	if (str[*i] < '0' || str[*i] > '9')
+		return sign;
+	int n = 0;
+	for (; str[*i] >= '0' && str[*i] <= '9'; *i += 1)
+		n = 10 * n + str[*i] - '0';
+	return sign * n;
+}
+
+poly *new_poly_from_str(char *str)
+{
+	int i = 0;
+	int deg = -1;
+	int *coeffs = (int *)calloc(100, sizeof(int));
+	assert(coeffs);
+	int t = 100;
+	int exp;
+	for (int coeff = next_coeff(str, &i); i != -10; coeff = next_coeff(str, &i))
+	{
+		while (str[i] != '\0' && str[i] != 'x' && str[i] != 'X' && str[i] != '+' && str[i] != '-')
+			i++;
+		if (str[i] == '\0' || str[i] == '+' || str[i] == '-')
+		{
+			coeffs[0] += coeff;
+			coeffs[0] = ((coeffs[0] % p) + p) % p;
+			if (deg < 0 && coeffs[0] != 0)
+				deg = 0;
+			if (deg == 0 && coeffs[0] == 0)
+				deg = -1;
+		}
+		else
+		{
+			while (str[i] != '\0' && str[i] != '*' && str[i] != '^' && str[i] != '+' && str[i] != '-')
+				i++;
+			if (str[i] == '\0' || str[i] == '+' || str[i] == '-')
+				exp = 1;
+			else
+				exp = next_coeff(str, &i);
+			if (i != -10 && exp >= 0)
+			{
+				if (t < exp)
+				{
+					int *new_coeffs = (int *)calloc(2 * exp, sizeof(int));
+					assert(new_coeffs);
+					for (int j = 0; j < t; j++)
+						new_coeffs[j] = coeffs[j];
+					free(coeffs);
+					coeffs = new_coeffs;
+					t = 2 * exp;
+				}
+				coeffs[exp] += coeff;
+				coeffs[exp] = ((coeffs[exp] % p) + p) % p;
+				if (deg < exp && coeffs[exp] != 0)
+					deg = exp;
+				if (deg == exp && coeffs[exp] == 0)
+					while (deg >= 0 && coeffs[deg] == 0)
+						deg--;
+			}
+		}
+	}
+	if (deg == -1)
+	{
+		free(coeffs);
+		return new_poly_0();
+	}
+	poly *q = new_poly();
+	q->degree = deg;
+	q->coeffs = (int *)malloc((q->degree + 1) * sizeof(int));
+	assert(q->coeffs);
+	for (int i = 0; i <= q->degree; i++)
+		q->coeffs[i] = coeffs[i];
+	free(coeffs);
+	return q;
+}
+
 poly *new_poly_0(void)
 {
 	poly *q = (poly *)malloc(sizeof(poly));
@@ -229,6 +320,19 @@ poly *new_poly_from_copy(poly *source)
 	for (int i = 0; i <= copy->degree; i++)
 		copy->coeffs[i] = source->coeffs[i];
 	return copy;
+}
+
+poly *new_rand_poly(int deg)
+{
+	poly *q = new_poly();
+	q->degree = deg;
+	q->coeffs = (int *)malloc((q->degree + 1) * sizeof(int));
+	assert(q->coeffs);
+	for (int i = 0; i <= q->degree; i++)
+		q->coeffs[i] = rand_zp();
+	while (q->coeffs[q->degree] == 0)
+		q->coeffs[q->degree] = rand_zp();
+	return q;
 }
 
 void set_poly(poly *q, int degree, int *coeffs)
@@ -455,6 +559,14 @@ int inverse_zp(int n)
 	if (v1 < 0)
 		v1 += p;
 	return v1;
+}
+
+int rand_zp()
+{
+	int n = ((rand() << 24) ^ (rand() << 16) ^ (rand() << 8) ^ rand()) % p;
+	if (n < 0)
+		n += p;
+	return n;
 }
 
 void euclid_division(poly *p1, poly *p2, poly *q, poly *r)

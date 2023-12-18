@@ -61,5 +61,13 @@ int main(int argc, char **argv)
 	free_poly_full(qq);
 	free(b);
 	
+	poly *p5 = new_poly_from_str(" 57 + 193*x +  83*x^2 + 197*x^3 + 200*x^4 + 124*x^5 +  16*x^6 + 246*x^7 + 137*x^8 + 300*x^9 + 167*x^10");
+	print_poly_iso_length(p5);
+	free_poly_full(p5);
+	
+	poly *p6 = new_rand_poly(5);
+	print_poly_iso_length(p6);
+	free_poly_full(p6);
+	
     return EXIT_SUCCESS;
 }
