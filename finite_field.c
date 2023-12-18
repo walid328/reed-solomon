@@ -660,7 +660,7 @@ poly *interpolation(int *a, int *b, int n)
 	for (int i = 0; i <= n; i++)
 	{
 		poly *x_m_ai = new_poly_from_coeffs(1, (p - a[i]) % p, 1);
-		int fd_i = evaluate(fd, i);
+		int fd_i = evaluate(fd, a[i]);
 		poly *x_m_ai_fd_i = mul_poly_scalar(x_m_ai, fd_i);
 		poly *l_i = new_poly();
 		poly *r = new_poly();
@@ -679,5 +679,3 @@ poly *interpolation(int *a, int *b, int n)
 	free_poly_full(fd);
 	return q;
 }
-
-
