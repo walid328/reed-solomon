@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <assert.h>
 #include <string.h>
+#include <stdarg.h>
 
 #include "finite_field.h"
 
@@ -11,7 +12,7 @@ struct polynomial
 	int *coeffs;
 };
 
-int p = 7;
+int p = 307;
 
 int size_int_str(int n)
 {
@@ -179,6 +180,22 @@ poly *new_poly(void)
 	return q;
 }
 
+poly *new_poly_from_coeffs(int deg, ...)
+{
+	if (deg == -1)
+		return new_poly_0();
+	poly *q = new_poly();
+	q->degree = deg;
+	q->coeffs = (int *)malloc((q->degree + 1) * sizeof(int));
+	assert(q->coeffs);
+	va_list valist;
+	va_start(valist, deg);
+	for (int i = 0; i <= deg; i++)
+		q->coeffs[i] = va_arg(valist, int);
+	va_end(valist);
+	return q;
+}
+
 poly *new_poly_0(void)
 {
 	poly *q = (poly *)malloc(sizeof(poly));
@@ -200,18 +217,18 @@ poly *new_poly_1(void)
 	return q;
 }
 
-poly *new_poly_from_copy(poly *p)
+poly *new_poly_from_copy(poly *source)
 {
-	if (p->degree == -1)
+	if (source->degree == -1)
 		return new_poly_0();
-	poly *q = (poly *)malloc(sizeof(poly));
-	assert(q);
-	q->degree = p->degree;
-	q->coeffs = (int *)malloc((q->degree + 1) * sizeof(int));
-	assert(q->coeffs);
-	for (int i = 0; i <= q->degree; i++)
-		q->coeffs[i] = p->coeffs[i];
-	return q;
+	poly *copy = (poly *)malloc(sizeof(poly));
+	assert(copy);
+	copy->degree = source->degree;
+	copy->coeffs = (int *)malloc((copy->degree + 1) * sizeof(int));
+	assert(copy->coeffs);
+	for (int i = 0; i <= copy->degree; i++)
+		copy->coeffs[i] = source->coeffs[i];
+	return copy;
 }
 
 void set_poly(poly *q, int degree, int *coeffs)
@@ -366,8 +383,60 @@ poly *mul_poly(poly *p1, poly *p2)
 	return prod;
 }
 
+poly *mul_poly_scalar(poly *q, int n)
+{
+	if (q->degree == -1 || n == 0)
+		return new_poly_0();
+	poly *prod = new_poly();
+	prod->degree = q->degree;
+	prod->coeffs = (int *)malloc((prod->degree + 1) * sizeof(int));
+	assert(prod->coeffs);
+	for (int i = 0; i <= prod->degree; i++)
+		prod->coeffs[i] = (q->coeffs[i] * n) % p;
+	return prod;
+}
+
+poly *derivate(poly *q)
+{
+	if (q->degree < 1)
+		return new_poly_0();
+	poly *derivative = new_poly();
+	derivative->degree = q->degree - 1;
+	derivative->coeffs = (int *)malloc((derivative->degree + 1) * sizeof(int));
+	assert(derivative->coeffs);
+	for (int i = 1; i <= q->degree; i++)
+		derivative->coeffs[i - 1] = (i * q->coeffs[i]) % p;
+	return derivative;
+}
+
+int evaluate(poly *q, int x)
+{
+	int y = 0;
+	int x_i = 1;
+	for (int i = 0; i <= q->degree; i++)
+	{
+		y += x_i * q->coeffs[i];
+		x_i = (x_i * x) % p;
+	}
+	return y % p;
+}
+
+int *multi_evaluate(poly *q, int *a, int n)
+{
+	int *b = (int *)malloc((n + 1) * sizeof(int));
+	assert(b);
+	for (int i = 0; i <= n; i++)
+		b[i] = evaluate(q, a[i]);
+	return b;
+}
+
 int inverse_zp(int n)
 {
+	if (n == 0)
+	{
+		fprintf(stderr, "0 not inversible\n");
+		exit(EXIT_FAILURE);
+	}
 	int v0 = 0;
 	int r0 = p;
 	int v1 = 1;
@@ -463,5 +532,40 @@ poly *xgcd(poly *p1, poly *p2, poly *u, poly *v)
 	return r0;
 }
 
+poly *interpolation(int *a, int *b, int n)
+{
+	poly *f = new_poly_1();
+	for (int i = 0; i <= n; i++)
+	{
+		poly *x_m_ai = new_poly_from_coeffs(1, (p - a[i]) % p, 1);
+		poly *f_x_m_ai = mul_poly(f, x_m_ai);
+		free_poly_full(x_m_ai);
+		free_poly_full(f);
+		f = f_x_m_ai;
+	}
+	poly *fd = derivate(f);
+	poly *q = new_poly_0();
+	for (int i = 0; i <= n; i++)
+	{
+		poly *x_m_ai = new_poly_from_coeffs(1, (p - a[i]) % p, 1);
+		int fd_i = evaluate(fd, i);
+		poly *x_m_ai_fd_i = mul_poly_scalar(x_m_ai, fd_i);
+		poly *l_i = new_poly();
+		poly *r = new_poly();
+		euclid_division(f, x_m_ai_fd_i, l_i, r);
+		poly *b_i_l_i = mul_poly_scalar(l_i, b[i]);
+		poly *q_p_b_i_l_i = add_poly(q, b_i_l_i);
+		free_poly_full(x_m_ai);
+		free_poly_full(x_m_ai_fd_i);
+		free_poly_full(l_i);
+		free_poly_full(r);
+		free_poly_full(b_i_l_i);
+		free_poly_full(q);
+		q = q_p_b_i_l_i;
+	}
+	free_poly_full(f);
+	free_poly_full(fd);
+	return q;
+}
 
 

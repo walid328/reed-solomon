@@ -19,11 +19,13 @@ void print_poly(poly *q);
 
 poly *new_poly(void);
 
+poly *new_poly_from_coeffs(int deg, ...);
+
 poly *new_poly_0(void);
 
 poly *new_poly_1(void);
 
-poly *new_poly_from_copy(poly *p);
+poly *new_poly_from_copy(poly *source);
 
 void set_poly(poly *q, int degree, int *coefficients);
 
@@ -37,12 +39,21 @@ poly *substract_poly(poly *p1, poly *p2);
 
 poly *mul_poly(poly *p1, poly *p2);
 
+poly *mul_poly_scalar(poly *q, int n);
+
+poly *derivate(poly *q);
+
+int evaluate(poly *q, int x);
+
+int *multi_evaluate(poly *q, int *a, int n);
+
+// return the inverse of n in Z/pZ
 int inverse_zp(int n);
 
 void euclid_division(poly *p1, poly *p2, poly *q, poly *r);
 
 poly *xgcd(poly *p1, poly *p2, poly *u, poly *v);
 
-poly *interpolation(int *a, int *b);
+poly *interpolation(int *a, int *b, int n);
 
 #endif
