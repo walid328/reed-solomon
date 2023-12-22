@@ -1,68 +1,25 @@
 #ifndef FINITE_FIELD_H
 #define FINITE_FIELD_H
+#define p 307
 
-typedef struct polynomial poly;
+// Basic operations in Z/pZ.
 
-int size_int_str(int n);
+// Returns the sum of two elements of Z/pZ.
+int add_zp(int n, int m);
 
-void str_add_int(char *string, int *index, int n);
+// Returns the difference of two elements of Z/pZ.
+int sub_zp(int n, int m);
 
-char *str_poly_iso_length(poly *q);
+// Returns the opposite of an element of Z/pZ.
+int opp_zp(int n);
 
-char *str_poly_min(poly *q);
+// Returns the product of two elements of Z/pZ.
+int mul_zp(int n, int m);
 
-void print_poly_iso_length(poly *q);
+// Return the inverse of n in Z/pZ.
+int inv_zp(int n);
 
-void print_poly_min(poly *q);
-
-void print_poly(poly *q);
-
-poly *new_poly(void);
-
-poly *new_poly_from_coeffs(int deg, ...);
-
-poly *new_poly_0(void);
-
-poly *new_poly_1(void);
-
-poly *new_poly_from_copy(poly *source);
-
-int next_coeff(char *str, int *i);
-
-poly *new_poly_from_str(char *str);
-
-poly *new_rand_poly(int deg);
-
-void set_poly(poly *q, int degree, int *coefficients);
-
-void free_poly(poly *q);
-
-void free_poly_full(poly *q);
-
-poly *add_poly(poly *p1, poly *p2);
-
-poly *substract_poly(poly *p1, poly *p2);
-
-poly *mul_poly(poly *p1, poly *p2);
-
-poly *mul_poly_scalar(poly *q, int n);
-
-poly *derivate(poly *q);
-
-int evaluate(poly *q, int x);
-
-int *multi_evaluate(poly *q, int *a, int n);
-
-// return the inverse of n in Z/pZ
-int inverse_zp(int n);
-
-// return random element in Z/pZ
+// Returns a random element in Z/pZ.
 int rand_zp();
-
-void euclid_division(poly *p1, poly *p2, poly *q, poly *r);
-
-poly *xgcd(poly *p1, poly *p2, poly *u, poly *v);
-
-poly *interpolation(int *a, int *b, int n);
 
 #endif

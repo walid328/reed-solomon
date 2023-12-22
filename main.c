@@ -1,69 +1,78 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+#include "polynomial.h"
 #include "finite_field.h"
 
 int main(int argc, char **argv)
 {
-	int coeffs_p1[] = {5, 4, 3};
-	int coeffs_p2[] = {1, 3, 2};
+	printf("Test des opération de base:\n");
 
-	poly *p1 = new_poly();
-	set_poly(p1, 2, coeffs_p1);
-	poly *p2 = new_poly();
-	set_poly(p2, 2, coeffs_p2);
+	printf("\nLes polynômes:\n");
+	poly *f = new_poly_from_coeffs(2, 5, 4, 3);
+	print_poly(f);
+	poly *g = new_poly_from_coeffs(2, 1, 3, 2);
+	print_poly(g);
 
-	poly *sum = add_poly(p1, p2);
+	printf("La somme:\n");
+	poly *sum = new_poly();
+	add_poly(sum, f, g);
 	print_poly(sum);
+	free_full_poly(sum);
 
-	poly *prod = mul_poly(p1, p2);
+	printf("La différence:\n");
+	poly *dif = new_poly();
+	sub_poly(dif, f, g);
+	print_poly(dif);
+	free_full_poly(dif);
+
+	printf("Le produit:\n");
+	poly *prod = new_poly();
+	mul_poly(prod, f, g);
 	print_poly(prod);
+	free_full_poly(prod);
 
-	free_poly(p1);
-	free_poly(p2);
-	free_poly_full(sum);
-	free_poly_full(prod);
+	printf("La multiplication par un scalaire:\n");
+	int x = 10;
+	poly *xf = new_poly();
+	mul_scalar_poly(xf, x, f);
+	print_poly(xf);
+	free_full_poly(xf);
 
-	int coeffs_p3[] = {1, 3, 2, 19};
-	poly *p3 = new_poly();
-	set_poly(p3, 3, coeffs_p3);
-
-	int coeffs_p4[] = {5, 2};
-	poly *p4 = new_poly();
-	set_poly(p4, 1, coeffs_p4);
-
+	printf("Le quotient et le reste:\n");
 	poly *quo = new_poly();
-	poly *rest = new_poly();
-	euclid_division(p3, p4, quo, rest);
-	print_poly_iso_length(p3);
-	print_poly_iso_length(p4);
-	print_poly_iso_length(quo);
-	print_poly_iso_length(rest);
-	free_poly(p3);
-	free_poly(p4);
-	free_poly_full(quo);
-	free_poly_full(rest);
+	poly *rem = new_poly();
+	euclid_div_poly(quo, rem, f, g);
+	print_poly(quo);
+	print_poly(rem);
+	free_full_poly(quo);
+	free_full_poly(rem);
+
+	printf("Euclide étendu:\n");
+	poly *d, *u, *v;
+	xgcd_poly(&d, &u, &v, f, g);
+	print_poly(d);
+	print_poly(u);
+	print_poly(v);
+	free_full_poly(d);
+	free_full_poly(u);
+	free_full_poly(v);
+
+	free_full_poly(f);
+	free_full_poly(g);
+
+	printf("\nTest de l'interpolation:\n");
 
 	int n = 10;
-	int a[] = {200, 100, 49, 1, 256, 0, 67, 98, 212, 300, 27};
-	int coeffs_q[] = {52, 298, 189, 100, 167, 234, 232, 10, 0, 1, 56};
-	poly *q = new_poly();
-	set_poly(q, 10, coeffs_q);
-	int *b = multi_evaluate(q, a, n);
-	print_poly_iso_length(q);
-	poly *qq = interpolation(a, b, n);
-	print_poly_iso_length(qq);
-	free_poly(q);
-	free_poly_full(qq);
-	free(b);
-
-	poly *p5 = new_poly_from_str(" 57 + 193*x +  83*x^2 + 197*x^3 + 200*x^4 + 124*x^5 +  16*x^6 + 246*x^7 + 137*x^8 + 300*x^9 + 167*x^10");
-	print_poly_iso_length(p5);
-	free_poly_full(p5);
-
-	poly *p6 = new_rand_poly(5);
-	print_poly_iso_length(p6);
-	free_poly_full(p6);
+	int a[] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
+	f = new_poly_from_coeffs(n, 231, 142, 229, 200, 0, 12, 2, 3, 123, 8, 28);
+	print_poly(f);
+	int b[n + 1];
+	multi_eval_poly(f, n, a, b);
+	free_full_poly(f);
+	g = interpolation(a, b, n);
+	print_poly(g);
+	free_full_poly(g);
 
 	return EXIT_SUCCESS;
 }
