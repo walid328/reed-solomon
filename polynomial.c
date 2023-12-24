@@ -252,9 +252,9 @@ int next_coeff(char *str, int *i)
 int *coeffs_from_str(char *str, int *deg)
 {
     int i = 0;
-    int *coeffs = (int *)calloc(100, sizeof(int));
-    assert(coeffs);
     int t = 100;
+    int *coeffs = (int *)calloc(t, sizeof(int));
+    assert(coeffs);
     int exp;
     for (int coeff = next_coeff(str, &i); i != -10; coeff = next_coeff(str, &i))
     {
@@ -279,7 +279,7 @@ int *coeffs_from_str(char *str, int *deg)
                 exp = next_coeff(str, &i);
             if (i != -10 && exp >= 0)
             {
-                if (t < exp)
+                if (t <= exp)
                 {
                     int *new_coeffs = (int *)calloc(2 * exp, sizeof(int));
                     assert(new_coeffs);
