@@ -3,26 +3,30 @@
 
 #include "finite_field.h"
 
+int mod_zp(int n)
+{
+    int m = n % p;
+    return m >= 0 ? m : m + p;
+}
+
 int add_zp(int n, int m)
 {
-    int sum = n + m;
-    return sum < p ? sum : sum - p;
+    return mod_zp(n + m);
 }
 
 int sub_zp(int n, int m)
 {
-    int diff = n - m;
-    return n >= m ? diff : diff + p;
+    return mod_zp(n - m);
 }
 
 int opp_zp(int n)
 {
-    return (p - n) % p;
+    return mod_zp(-n);
 }
 
 int mul_zp(int n, int m)
 {
-    return (n * m) % p;
+    return mod_zp(n * m);
 }
 
 int rand_zp()

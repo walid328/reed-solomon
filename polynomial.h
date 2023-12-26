@@ -7,7 +7,11 @@ typedef struct polynomial poly;
 
 /******************************************************/
 
-void set_poly(poly *q, int degree, int *coefficients);
+void set_poly(poly *f, int degree, int *coefficients);
+
+int degree(poly *f);
+
+int *coeffs(poly *f);
 
 /******************************************************/
 
@@ -102,6 +106,12 @@ void euclid_div_poly(poly *q, poly *r, poly *op1, poly *op2);
 // d, u, v shouldn't be initialized.
 // d is a monic polynomial.
 void xgcd_poly(poly **d, poly **u, poly **v, poly *op1, poly *op2);
+
+// Extended Euclidean algorithm but stops when remainder has a degree smaller
+// than n.
+// d = u*op1 + v*op2.
+// d, u, v shouldn't be initialized.
+void partial_gcd_poly(poly **d, poly **u, poly **v, poly *op1, poly *op2, int n);
 
 /******************************************************/
 

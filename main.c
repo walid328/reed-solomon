@@ -1,8 +1,16 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+#include "rs_code.h"
 #include "polynomial.h"
 #include "finite_field.h"
+
+void print_tab(int *T, int n)
+{
+	for (int i = 0; i < n; i++)
+		printf("%d ", T[i]);
+	printf("\n");
+}
 
 int main(int argc, char **argv)
 {
@@ -63,9 +71,9 @@ int main(int argc, char **argv)
 
 	printf("\nTest de l'interpolation:\n");
 
-	int n = 10;
+	int n = 11;
 	int a[] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
-	f = new_poly_from_coeffs(n, 231, 142, 229, 200, 0, 12, 2, 3, 123, 8, 28);
+	f = new_poly_from_coeffs(n - 1, 231, 142, 229, 200, 0, 12, 2, 3, 123, 8, 28);
 	print_poly(f);
 	int b[n + 1];
 	multi_eval_poly(f, n, a, b);
@@ -74,5 +82,23 @@ int main(int argc, char **argv)
 	print_poly(g);
 	free_full_poly(g);
 
+	printf("\nTest des codes de Reed-Solomon\n");
+	n = 7;
+	int A[] = {0, 1, 2, 3, 4, 5, 6};
+	printf("Pour le message:\n");
+	int k = 3;
+	int M[] = {1, 2, 3};
+	print_tab(M, k);
+	printf("Le mot de code est:\n");
+	int C[n];
+	encoding(C, A, n, M, k);
+	print_tab(C, n);
+	printf("Le message reçu avec erreurs est:\n");
+	int B[] = {1, 6, 123, 456, 57, 86, 121};
+	print_tab(B, n);
+	printf("Avec la méthode de Gao, on trouve:\n");
+	int m[k];
+	decoding(m, A, B, n, k);
+	print_tab(m, k);
 	return EXIT_SUCCESS;
 }

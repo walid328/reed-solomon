@@ -1,6 +1,6 @@
 CC= gcc
-FLAGS= -Wall
-OBJFILES= main.o polynomial.o finite_field.o
+FLAGS= -Wall -g
+OBJFILES= main.o polynomial.o finite_field.o rs_code.o
 TARGET= main
 
 all: $(TARGET)

@@ -1,8 +1,11 @@
 #ifndef FINITE_FIELD_H
 #define FINITE_FIELD_H
-#define p 307
+#define p 929
 
 // Basic operations in Z/pZ.
+
+// Returns the representant of n in Z/pZ.
+int mod_zp(int n);
 
 // Returns the sum of two elements of Z/pZ.
 int add_zp(int n, int m);

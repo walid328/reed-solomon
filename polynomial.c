@@ -20,6 +20,16 @@ void set_poly(poly *f, int deg, int *coeffs)
     f->coeffs = coeffs;
 }
 
+int degree(poly *f)
+{
+    return f->degree;
+}
+
+int *coeffs(poly *f)
+{
+    return f->coeffs;
+}
+
 /******************************************************/
 
 int size_int_str(int n)
@@ -610,6 +620,41 @@ void xgcd_poly(poly **d, poly **u, poly **v, poly *op1, poly *op2)
     free_full_poly(v1);
 }
 
+void partial_gcd_poly(poly **d, poly **u, poly **v, poly *op1, poly *op2, int n)
+{
+    *d = new_poly_from_copy(op1);
+    *u = new_poly_1();
+    *v = new_poly_0();
+    poly *r1 = new_poly_from_copy(op2);
+    poly *u1 = new_poly_0();
+    poly *v1 = new_poly_1();
+    while (n <= (*d)->degree)
+    {
+        poly *q = new_poly();
+        poly *r2 = new_poly();
+        euclid_div_poly(q, r2, *d, r1);
+        poly *u2 = new_poly();
+        mul_poly(u2, q, u1);
+        sub_poly(u2, *u, u2);
+        poly *v2 = new_poly();
+        mul_poly(v2, q, v1);
+        sub_poly(v2, *v, v2);
+        free_full_poly(q);
+        free_full_poly(*d);
+        free_full_poly(*u);
+        free_full_poly(*v);
+        *d = r1;
+        *u = u1;
+        *v = v1;
+        r1 = r2;
+        u1 = u2;
+        v1 = v2;
+    }
+    free_full_poly(r1);
+    free_full_poly(u1);
+    free_full_poly(v1);
+}
+
 /******************************************************/
 
 void deriv_poly(poly *rop, poly *op)
@@ -656,7 +701,7 @@ void multi_eval_poly(poly *f, int n, int *a, int *b)
 poly *interpolation(int *a, int *b, int n)
 {
     poly *f = new_poly_1();
-    for (int i = 0; i <= n; i++)
+    for (int i = 0; i < n; i++)
     {
         poly *x_m_ai = new_poly_from_coeffs(1, opp_zp(a[i]), 1);
         mul_poly(f, f, x_m_ai);
@@ -665,7 +710,7 @@ poly *interpolation(int *a, int *b, int n)
     poly *fd = new_poly();
     deriv_poly(fd, f);
     poly *g = new_poly_0();
-    for (int i = 0; i <= n; i++)
+    for (int i = 0; i < n; i++)
     {
         poly *x_m_ai = new_poly_from_coeffs(1, opp_zp(a[i]), 1);
         int fd_ai = eval_poly(fd, a[i]);
