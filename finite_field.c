@@ -63,3 +63,28 @@ int inv_zp(int n)
         v1 += p;
     return v1;
 }
+
+int exp_zp(int base, int exp)
+{
+    int res = 1;
+    while (exp > 0)
+    {
+        if (exp & 1)
+            res = mul_zp(res, base);
+        exp >>= 1;
+        base = mul_zp(base, base);
+    }
+    return res;
+}
+
+int primitive_root_zp(int q, int d)
+{
+    int x;
+    int g;
+    do
+    {
+        x = rand_zp();
+        g = exp_zp(x, q);
+    } while (x == 0 || exp_zp(g, d / 2) == 1);
+    return g;
+}

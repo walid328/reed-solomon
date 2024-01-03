@@ -728,3 +728,33 @@ poly *interpolation(int *a, int *b, int n)
     free_full_poly(fd);
     return g;
 }
+
+/******************************************************/
+
+void split_array(int **even, int *even_size, int **odd, int *odd_size, int *tab, int tab_size)
+{
+    *even_size = tab_size / 2;
+    *odd_size = *even_size;
+    if (tab_size & 1)
+        (*even_size)++;
+    *even = (int *)malloc(*even_size * sizeof(int));
+    *odd = (int *)malloc(*odd_size * sizeof(int));
+    int even_cnt = 0;
+    int odd_cnt = 0;
+    for (int i = 0; i < tab_size; i++)
+        if (i & 1)
+            (*odd)[odd_cnt++] = tab[i];
+        else
+            (*even)[even_cnt++] = tab[i];
+}
+
+void split_poly(poly *even, poly *odd, poly *f)
+{
+    int *coeffs_even = NULL;
+    int even_size = 0;
+    int *coeffs_odd = NULL;
+    int odd_size = 0;
+    split_array(&coeffs_even, &even_size, &coeffs_odd, &odd_size, f->coeffs, f->degree + 1);
+    set_poly(even, even_size - 1, coeffs_even);
+    set_poly(odd, odd_size - 1, coeffs_odd);
+}

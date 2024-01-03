@@ -1,5 +1,5 @@
 CC= gcc
-FLAGS= -Wall -g
+FLAGS= -Wall
 OBJFILES= main.o polynomial.o finite_field.o rs_code.o
 TARGET= main
 

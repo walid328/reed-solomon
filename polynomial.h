@@ -132,4 +132,19 @@ void multi_eval_poly(poly *f, int n, int *a, int *b);
 // compute the inverse of the Vandermonde matrix.
 poly *interpolation(int *a, int *b, int n);
 
+/******************************************************/
+
+/* FFT functions */
+
+// Works if p = q*d + 1 where d is a power of 2
+
+// "Splits" the array t of size n into two arrays
+// containing elements of even indexes and even indexes.
+void split_array(int **even, int *even_size, int **odd, int *odd_size, int *tab, int tab_size);
+
+// "Splits" the polynomial f in two polynomial even and odd
+// such that f(x) = even(x^2) + x*odd(x^2).
+// f should have a degree of d-1 at most.
+void split_poly(poly *even, poly *odd, poly *f);
+
 #endif

@@ -1,6 +1,6 @@
 #ifndef FINITE_FIELD_H
 #define FINITE_FIELD_H
-#define p 929
+#define p 193
 
 // Basic operations in Z/pZ.
 
@@ -24,5 +24,13 @@ int inv_zp(int n);
 
 // Returns a random element in Z/pZ.
 int rand_zp();
+
+// Returns x^n mod p using modular exponentiation.
+int exp_zp(int base, int exp);
+
+// Returns a d^th primitive root of unity in Z/pZ.
+// We should have p = dq + 1 where d is a power of 2,
+// and q is odd.
+int primitive_root_zp(int q, int d);
 
 #endif

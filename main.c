@@ -100,5 +100,47 @@ int main(int argc, char **argv)
 	int m[k];
 	decoding(m, A, B, n, k);
 	print_tab(m, k);
+
+	printf("\nTest de l'exponentiation modulaire:\n");
+	int base = 146;
+	int exp = 151;
+	int res = exp_zp(base, exp);
+	printf("%d^%d mod %d = %d\n", base, exp, p, res);
+
+	printf("\nTest de racine primitive de l'unité\n");
+	int Q = 3;
+	int D = 1 << 6;
+	int G = primitive_root_zp(Q, D);
+	printf("%d\n", G);
+
+	printf("\nTest split array:\n");
+	int tab_size = 19;
+	int *tab = malloc(tab_size * sizeof(int));
+	for (int i = 0; i < tab_size; i++)
+		tab[i] = i;
+	print_tab(tab, tab_size);
+	int *even_tab = NULL;
+	int even_size = 0;
+	int *odd_tab = NULL;
+	int odd_size = 0;
+	split_array(&even_tab, &even_size, &odd_tab, &odd_size, tab, tab_size);
+	print_tab(even_tab, even_size);
+	print_tab(odd_tab, odd_size);
+	free(even_tab);
+	free(odd_tab);
+	free(tab);
+
+	printf("\nTest split poly:\n");
+	poly *t = new_poly_from_coeffs(10, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10);
+	print_poly(t);
+	poly *even = new_poly();
+	poly *odd = new_poly();
+	split_poly(even, odd, t);
+	print_poly(even);
+	print_poly(odd);
+	free_full_poly(t);
+	free_full_poly(even);
+	free_full_poly(odd);
+
 	return EXIT_SUCCESS;
 }
