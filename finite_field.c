@@ -87,8 +87,9 @@ int primitive_root_zp(int q, int d)
 
 int min_primitive_root_zp(int q, int d)
 {
+	if (d == 1) return 1;
 	int x = 2;
-	while (exp_zp(x, d) != 1 || exp_zp(x, q * (d / 2)) == 1)
+	while (exp_zp(x, d / 2) != p-1)
 		x++;
     return x;
 }
