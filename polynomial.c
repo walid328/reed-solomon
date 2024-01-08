@@ -872,7 +872,7 @@ int *inv_fft(int *eval, int d, int omega)
 	int omega_i = omega;
 	for (int i = 1; i <= d / 2; i++)
 	{
-		r1[d / 2 - i] = mul_zp(r1[d / 2 - i], omega_i);
+		r1[d / 2 - i] = opp_zp(mul_zp(r1[d / 2 - i], omega_i));
 		omega_i = mul_zp(omega_i, omega);
 	}
 	int *f = (int *)malloc(d * sizeof(int));
@@ -897,12 +897,19 @@ poly *poly_inv_fft(int *eval)
 	int degree = d - 1;
 	while (degree >= 0 && f_coeffs[degree] == 0)
 		degree--;
+	if (degree == -1)
+	{
+		poly *f = new_poly_0();
+		free(f_coeffs);
+		return f;
+	}
 	poly *f = new_poly();
 	f->degree = degree;
 	f->coeffs = (int *)malloc((f->degree + 1) * sizeof(int));
 	assert(f->coeffs);
 	for (int i = 0; i <= f->degree; i++)
 		f->coeffs[i] = f_coeffs[i];
+	free(f_coeffs);
 	return f;
 }
 

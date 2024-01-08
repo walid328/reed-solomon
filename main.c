@@ -158,8 +158,6 @@ int main(int argc, char **argv)
 	poly *test_fftest = poly_inv_fft(eval_fft);
 	print_poly_iso_length(fftest);
 	print_poly_iso_length(test_fftest);
-	printf("f(%d) = %d\n", omega, eval_poly(fftest, omega));
-	printf("f(%d) = %d\n", omega, eval_poly(test_fftest, omega));
 	
 	free_full_poly(fftest);
 	free(eval_fft);
