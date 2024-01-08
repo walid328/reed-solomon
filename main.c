@@ -124,7 +124,7 @@ int main(int argc, char **argv)
 	int even_size = 0;
 	int *odd_tab = NULL;
 	int odd_size = 0;
-	split_array(&even_tab, &even_size, &odd_tab, &odd_size, tab, tab_size);
+	split_all_array(&even_tab, &even_size, &odd_tab, &odd_size, tab, tab_size);
 	print_tab(even_tab, even_size);
 	print_tab(odd_tab, odd_size);
 	free(even_tab);
@@ -148,13 +148,22 @@ int main(int argc, char **argv)
 	printf("q : %d , d : %d\n", Q, D);
 	printf("omega : %d\n", omega);
 	poly *fftest = new_rand_poly(10);
-	int **eval_fft = NULL;
-	int **eval_dft = NULL;
-	poly_fft(fftest, eval_fft);
-	poly_dft(fftest, eval_dft);
+	int *eval_fft;
+	int *eval_dft;
+	poly_fft(fftest, &eval_fft);
+	poly_dft(fftest, &eval_dft);
+	print_tab(eval_fft, D);
+	print_tab(eval_dft, D);
+	
+	poly *test_fftest = poly_inv_fft(eval_fft);
+	print_poly_iso_length(fftest);
+	print_poly_iso_length(test_fftest);
+	printf("f(%d) = %d\n", omega, eval_poly(fftest, omega));
+	printf("f(%d) = %d\n", omega, eval_poly(test_fftest, omega));
+	
 	free_full_poly(fftest);
-	print_tab(*eval_fft, D);
-	print_tab(*eval_dft, D);
+	free(eval_fft);
+	free(eval_dft);
 	
 
 	return EXIT_SUCCESS;

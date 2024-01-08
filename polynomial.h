@@ -143,7 +143,10 @@ poly *interpolation(int *a, int *b, int n);
 
 // "Splits" the array tab of size tab_size into two arrays
 // containing elements of even indexes and even indexes.
-void split_array(int **even, int *even_size, int **odd, int *odd_size, int *tab, int tab_size);
+void split_all_array(int **even, int *even_size, int **odd, int *odd_size, int *tab, int tab_size);
+
+// splits array with even length
+void split_array(int **even, int **odd, int *tab, int tab_size);
 
 // inverse of split array
 void merge_array(int **tab, int *even, int *odd, int subtab_size);
@@ -159,5 +162,11 @@ int *fft(int *f, int d, int omega);
 
 // fft for polynomials
 void poly_fft(poly *f, int **eval);
+
+// inverse fft in int* format
+int *inv_fft(int *eval, int d, int omega);
+
+// inverse fft in poly format
+poly *poly_inv_fft(int *eval);
 
 #endif
