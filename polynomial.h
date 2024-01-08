@@ -127,6 +127,9 @@ int eval_poly(poly *f, int x);
 // tab a and stores the result in tab b.
 void multi_eval_poly(poly *f, int n, int *a, int *b);
 
+// dft for polynomials
+void poly_dft(poly *f, int **eval);
+
 // Computes a polynomial using n points (a, b) such
 // that f(a) = b. We use Lagrange polynomials to
 // compute the inverse of the Vandermonde matrix.
@@ -138,13 +141,23 @@ poly *interpolation(int *a, int *b, int n);
 
 // Works if p = q*d + 1 where d is a power of 2
 
-// "Splits" the array t of size n into two arrays
+// "Splits" the array tab of size tab_size into two arrays
 // containing elements of even indexes and even indexes.
 void split_array(int **even, int *even_size, int **odd, int *odd_size, int *tab, int tab_size);
+
+// inverse of split array
+void merge_array(int **tab, int *even, int *odd, int subtab_size);
 
 // "Splits" the polynomial f in two polynomial even and odd
 // such that f(x) = even(x^2) + x*odd(x^2).
 // f should have a degree of d-1 at most.
 void split_poly(poly *even, poly *odd, poly *f);
+
+// fast fourier transform for d a power of twoo
+// omega should be a d^th primitive root of unity
+int *fft(int *f, int d, int omega);
+
+// fft for polynomials
+void poly_fft(poly *f, int **eval);
 
 #endif

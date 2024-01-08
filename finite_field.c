@@ -31,10 +31,7 @@ int mul_zp(int n, int m)
 
 int rand_zp()
 {
-    int n = ((rand() << 24) ^ (rand() << 16) ^ (rand() << 8) ^ rand()) % p;
-    if (n < 0)
-        n += p;
-    return n;
+    return mod_zp((rand() << 24) ^ (rand() << 16) ^ (rand() << 8) ^ rand());
 }
 
 int inv_zp(int n)
@@ -79,8 +76,7 @@ int exp_zp(int base, int exp)
 
 int primitive_root_zp(int q, int d)
 {
-    int x;
-    int g;
+    int x, g;
     do
     {
         x = rand_zp();
@@ -88,3 +84,12 @@ int primitive_root_zp(int q, int d)
     } while (x == 0 || exp_zp(g, d / 2) == 1);
     return g;
 }
+
+int min_primitive_root_zp(int q, int d)
+{
+	int x = 2;
+	while (exp_zp(x, d) != 1 || exp_zp(x, q * (d / 2)) == 1)
+		x++;
+    return x;
+}
+

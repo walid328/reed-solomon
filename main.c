@@ -14,6 +14,9 @@ void print_tab(int *T, int n)
 
 int main(int argc, char **argv)
 {
+	int Q, D;
+	for (Q = p - 1, D = 1; (Q & 1) == 0; Q >>= 1, D <<= 1)
+		;
 	printf("Test des opération de base:\n");
 
 	printf("\nLes polynômes:\n");
@@ -108,8 +111,6 @@ int main(int argc, char **argv)
 	printf("%d^%d mod %d = %d\n", base, exp, p, res);
 
 	printf("\nTest de racine primitive de l'unité\n");
-	int Q = 3;
-	int D = 1 << 6;
 	int G = primitive_root_zp(Q, D);
 	printf("%d\n", G);
 
@@ -141,6 +142,20 @@ int main(int argc, char **argv)
 	free_full_poly(t);
 	free_full_poly(even);
 	free_full_poly(odd);
+	
+	printf("\nTest fft:\n");
+	int omega = min_primitive_root_zp(Q, D);
+	printf("q : %d , d : %d\n", Q, D);
+	printf("omega : %d\n", omega);
+	poly *fftest = new_rand_poly(10);
+	int **eval_fft = NULL;
+	int **eval_dft = NULL;
+	poly_fft(fftest, eval_fft);
+	poly_dft(fftest, eval_dft);
+	free_full_poly(fftest);
+	print_tab(*eval_fft, D);
+	print_tab(*eval_dft, D);
+	
 
 	return EXIT_SUCCESS;
 }

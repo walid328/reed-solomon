@@ -518,10 +518,8 @@ void mul_poly(poly *rop, poly *op1, poly *op2)
             for (int j = 0; j <= op2->degree; j++)
                 coeffs[i + j] = add_zp(coeffs[i + j], mul_zp(op1->coeffs[i], op2->coeffs[j]));
     }
-    if (rop == op1)
-        clear_full_poly(op1);
-    if (rop == op2)
-        clear_full_poly(op2);
+    if (rop == op1 || rop == op2)
+        clear_full_poly(rop);
     set_poly(rop, deg, coeffs);
 }
 
@@ -698,6 +696,24 @@ void multi_eval_poly(poly *f, int n, int *a, int *b)
         b[i] = eval_poly(f, a[i]);
 }
 
+void poly_dft(poly *f, int **eval)
+{
+	int q, d;
+	for (q = p - 1, d = 1; (q & 1) == 0; q >>= 1, d <<= 1)
+		;
+	if (f->degree >= d)
+	{
+		fprintf(stderr, "poly_dft degree too high");
+		exit(EXIT_FAILURE);
+	}
+	int omega = min_primitive_root_zp(q, d);
+	*eval = (int *)malloc(d * sizeof(int));
+	assert(*eval);
+	int omega_i = 1;
+	for (int i = 0; i < d; i++, omega_i = mul_zp(omega_i, omega))
+		(*eval)[i] = eval_poly(f, omega_i);
+}
+
 poly *interpolation(int *a, int *b, int n)
 {
     poly *f = new_poly_1();
@@ -738,7 +754,9 @@ void split_array(int **even, int *even_size, int **odd, int *odd_size, int *tab,
     if (tab_size & 1)
         (*even_size)++;
     *even = (int *)malloc(*even_size * sizeof(int));
+	assert(*even);
     *odd = (int *)malloc(*odd_size * sizeof(int));
+	assert(*odd);
     int even_cnt = 0;
     int odd_cnt = 0;
     for (int i = 0; i < tab_size; i++)
@@ -746,6 +764,17 @@ void split_array(int **even, int *even_size, int **odd, int *odd_size, int *tab,
             (*odd)[odd_cnt++] = tab[i];
         else
             (*even)[even_cnt++] = tab[i];
+}
+
+void merge_array(int **tab, int *even, int *odd, int subtab_size)
+{
+	*tab = (int*)malloc(2 * subtab_size * sizeof(int));
+	assert(*tab);
+	for (int i = 0; i < subtab_size; i++)
+	{
+		(*tab)[2 * i] = even[i];
+		(*tab)[2 * i + 1] = odd[i];
+	}
 }
 
 void split_poly(poly *even, poly *odd, poly *f)
@@ -758,3 +787,57 @@ void split_poly(poly *even, poly *odd, poly *f)
     set_poly(even, even_size - 1, coeffs_even);
     set_poly(odd, odd_size - 1, coeffs_odd);
 }
+
+int *fft(int *f, int d, int omega)
+{
+	if (d == 1)
+	{
+		int *eval = (int *)malloc(sizeof(int));
+		assert(eval);
+		eval[0] = f[0];
+		return eval;
+	}
+	int *r0 = (int *)malloc((d / 2) * sizeof(int));
+	assert(r0);
+	for (int i = 0; i < d / 2; i++)
+		r0[i] = add_zp(f[i], f[i + d / 2]);
+	int *r1 = (int *)malloc((d / 2) * sizeof(int));
+	assert(r1);
+	int omega_i = 1;
+	for (int i = 0; i < d / 2; i++)
+	{
+		r1[i] = mul_zp(sub_zp(f[i], f[i + d / 2]), omega_i);
+		omega_i = mul_zp(omega_i, omega);
+	}
+	int *eval_r0 = fft(r0, d / 2, mul_zp(omega, omega));
+	int *eval_r1 = fft(r1, d / 2, mul_zp(omega, omega));
+	free(r0);
+	free(r1);
+	int *eval;
+	merge_array(&eval, eval_r0, eval_r1, d / 2);
+	free(eval_r0);
+	free(eval_r1);
+	return eval;
+}
+
+void poly_fft(poly *f, int **eval)
+{
+	int q, d;
+	for (q = p - 1, d = 1; (q & 1) == 0; q >>= 1, d <<= 1)
+		;
+	if (f->degree >= d)
+	{
+		fprintf(stderr, "poly_fft degree too high");
+		exit(EXIT_FAILURE);
+	}
+	int omega = min_primitive_root_zp(q, d);
+	int *coeffs = (int *)calloc(d, sizeof(int));
+	assert(coeffs);
+	for (int i = 0; i <= f->degree; i++)
+		coeffs[i] = f->coeffs[i];
+	//memcpy(coeffs, f->coeffs, (f->degree + 1) * sizeof(int));
+	*eval = fft(coeffs, d, omega);
+	free(coeffs);
+}
+
+
