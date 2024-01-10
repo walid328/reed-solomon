@@ -23,12 +23,6 @@ void str_add_int(char *string, int *index, int n);
 
 char *str_poly_iso_length(poly *q);
 
-char *str_poly_min(poly *q);
-
-void print_poly_iso_length(poly *q);
-
-void print_poly_min(poly *q);
-
 void print_poly(poly *q);
 
 /******************************************************/
@@ -167,6 +161,9 @@ void poly_fft(poly *f, int **eval);
 int *inv_fft(int *eval, int d, int omega);
 
 // inverse fft in poly format
-poly *poly_inv_fft(int *eval);
+void poly_inv_fft(poly *f, int *eval);
+
+// Polynomial multiplication using fft.
+void poly_mul_fft(poly *rop, poly *op1, poly *op2);
 
 #endif

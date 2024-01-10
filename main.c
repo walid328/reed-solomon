@@ -39,9 +39,13 @@ int main(int argc, char **argv)
 
 	printf("Le produit:\n");
 	poly *prod = new_poly();
+	poly *prod_fft = new_poly();
 	mul_poly(prod, f, g);
+	poly_mul_fft(prod_fft, f, g);
 	print_poly(prod);
+	print_poly(prod_fft);
 	free_full_poly(prod);
+	free_full_poly(prod_fft);
 
 	printf("La multiplication par un scalaire:\n");
 	int x = 10;
@@ -142,7 +146,7 @@ int main(int argc, char **argv)
 	free_full_poly(t);
 	free_full_poly(even);
 	free_full_poly(odd);
-	
+
 	printf("\nTest fft:\n");
 	int omega = min_primitive_root_zp(Q, D);
 	printf("q : %d , d : %d\n", Q, D);
@@ -154,15 +158,16 @@ int main(int argc, char **argv)
 	poly_dft(fftest, &eval_dft);
 	print_tab(eval_fft, D);
 	print_tab(eval_dft, D);
-	
-	poly *test_fftest = poly_inv_fft(eval_fft);
-	print_poly_iso_length(fftest);
-	print_poly_iso_length(test_fftest);
-	
+
+	poly *test_fftest = new_poly();
+	poly_inv_fft(test_fftest, eval_fft);
+	print_poly(fftest);
+	print_poly(test_fftest);
+
 	free_full_poly(fftest);
+	free_full_poly(test_fftest);
 	free(eval_fft);
 	free(eval_dft);
-	
 
 	return EXIT_SUCCESS;
 }
