@@ -37,8 +37,8 @@ poly *poly_new(void);
 // Returns a polynomial of degree deg,
 // the coefficients are given in arguments.
 // For instance for "x^2 + x + 1" the call would
-// be poly_new_from_poly_coeffs(2, 1, 1, 1).
-poly *poly_new_from_poly_coeffs(int deg, ...);
+// be poly_new_from_coeffs(2, 1, 1, 1).
+poly *poly_new_from_coeffs(int deg, ...);
 
 // Returns the polynomial equal to 1.
 poly *poly_new_1(void);

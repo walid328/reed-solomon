@@ -141,7 +141,7 @@ poly *poly_new_1(void)
     return f;
 }
 
-poly *poly_new_from_poly_coeffs(int deg, ...)
+poly *poly_new_from_coeffs(int deg, ...)
 {
     if (deg == -1)
         return poly_new();
@@ -630,7 +630,7 @@ poly *interpolation(int *a, int *b, int n)
     poly *f = poly_new_1();
     for (int i = 0; i < n; i++)
     {
-        poly *x_m_ai = poly_new_from_poly_coeffs(1, zp_opp(a[i]), 1);
+        poly *x_m_ai = poly_new_from_coeffs(1, zp_opp(a[i]), 1);
         poly_mul(f, f, x_m_ai);
         poly_free_full(x_m_ai);
     }
@@ -639,7 +639,7 @@ poly *interpolation(int *a, int *b, int n)
     poly *g = poly_new();
     for (int i = 0; i < n; i++)
     {
-        poly *x_m_ai = poly_new_from_poly_coeffs(1, zp_opp(a[i]), 1);
+        poly *x_m_ai = poly_new_from_coeffs(1, zp_opp(a[i]), 1);
         int fd_ai = poly_eval(fd, a[i]);
         poly_mul_scalar(x_m_ai, fd_ai, x_m_ai);
         poly *l_i = poly_new();
