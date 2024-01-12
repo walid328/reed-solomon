@@ -20,9 +20,9 @@ int main(int argc, char **argv)
 	printf("Test des opération de base:\n");
 
 	printf("\nLes polynômes:\n");
-	poly *f = poly_new_from_coeffs(2, 5, 4, 3);
+	poly *f = poly_new_from_poly_coeffs(2, 5, 4, 3);
 	poly_print(f);
-	poly *g = poly_new_from_coeffs(2, 1, 3, 2);
+	poly *g = poly_new_from_poly_coeffs(2, 1, 3, 2);
 	poly_print(g);
 
 	printf("La somme:\n");
@@ -80,7 +80,7 @@ int main(int argc, char **argv)
 
 	int n = 11;
 	int a[] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
-	f = poly_new_from_coeffs(n - 1, 231, 142, 229, 200, 0, 12, 2, 3, 123, 8, 28);
+	f = poly_new_from_poly_coeffs(n - 1, 231, 142, 229, 200, 0, 12, 2, 3, 123, 8, 28);
 	poly_print(f);
 	int b[n + 1];
 	poly_eval_multi(f, n, a, b);
@@ -136,7 +136,7 @@ int main(int argc, char **argv)
 	free(tab);
 
 	printf("\nTest split poly:\n");
-	poly *t = poly_new_from_coeffs(10, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10);
+	poly *t = poly_new_from_poly_coeffs(10, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10);
 	poly_print(t);
 	poly *even = poly_new();
 	poly *odd = poly_new();

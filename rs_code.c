@@ -19,7 +19,7 @@ void rs_decode(int *m, int *a, int *b, int n, int k)
     poly *g_0 = poly_new_1();
     for (int i = 0; i < n; i++)
     {
-        poly *x_m_ai = poly_new_from_coeffs(1, zp_opp(a[i]), 1);
+        poly *x_m_ai = poly_new_from_poly_coeffs(1, zp_opp(a[i]), 1);
         poly_mul(g_0, g_0, x_m_ai);
         poly_free_full(x_m_ai);
     }
@@ -29,10 +29,10 @@ void rs_decode(int *m, int *a, int *b, int n, int k)
     poly *f_1 = poly_new();
     poly *r = poly_new();
     poly_euc_div(f_1, r, g, v);
-    if (degree(r) == -1 && degree(f_1) < k)
+    if (poly_degree(r) == -1 && poly_degree(f_1) < k)
     {
         for (int i = 0; i < k; i++)
-            m[i] = coeffs(f_1)[i];
+            m[i] = poly_coeffs(f_1)[i];
         poly_free_full(g_0);
         poly_free_full(g_1);
         poly_free_full(g);

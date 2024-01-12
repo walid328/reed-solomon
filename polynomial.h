@@ -9,9 +9,9 @@ typedef struct polynomial poly;
 
 void poly_set(poly *f, int degree, int *coefficients);
 
-int degree(poly *f);
+int poly_degree(poly *f);
 
-int *coeffs(poly *f);
+int *poly_coeffs(poly *f);
 
 /******************************************************/
 
@@ -29,17 +29,16 @@ void poly_print(poly *q);
 
 /* Initialization functions */
 
-// Returns an empty polynomial.
+// Returns a zero polynomial.
+// The zero polynomial is represented with degree = -1
+// and a coeffs = NULL.
 poly *poly_new(void);
 
 // Returns a polynomial of degree deg,
 // the coefficients are given in arguments.
 // For instance for "x^2 + x + 1" the call would
-// be poly_new_from_coeffs(2, 1, 1, 1).
-poly *poly_new_from_coeffs(int deg, ...);
-
-// Return the zero polynomial.
-poly *poly_new_0(void);
+// be poly_new_from_poly_coeffs(2, 1, 1, 1).
+poly *poly_new_from_poly_coeffs(int deg, ...);
 
 // Returns the polynomial equal to 1.
 poly *poly_new_1(void);

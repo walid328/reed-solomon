@@ -21,12 +21,12 @@ void poly_set(poly *f, int deg, int *coeffs)
     f->coeffs = coeffs;
 }
 
-int degree(poly *f)
+int poly_degree(poly *f)
 {
     return f->degree;
 }
 
-int *coeffs(poly *f)
+int *poly_coeffs(poly *f)
 {
     return f->coeffs;
 }
@@ -131,15 +131,6 @@ poly *poly_new(void)
     return f;
 }
 
-poly *poly_new_0(void)
-{
-    poly *f = poly_new();
-    int *coeffs = (int *)calloc(1, sizeof(int));
-    assert(coeffs);
-    poly_set(f, -1, coeffs);
-    return f;
-}
-
 poly *poly_new_1(void)
 {
     poly *f = poly_new();
@@ -150,10 +141,10 @@ poly *poly_new_1(void)
     return f;
 }
 
-poly *poly_new_from_coeffs(int deg, ...)
+poly *poly_new_from_poly_coeffs(int deg, ...)
 {
     if (deg == -1)
-        return poly_new_0();
+        return poly_new();
     poly *f = poly_new();
     int *coeffs = (int *)malloc((deg + 1) * sizeof(int));
     assert(coeffs);
@@ -251,7 +242,7 @@ poly *poly_new_from_str(char *str)
     if (deg == -1)
     {
         free(coeffs_str);
-        return poly_new_0();
+        return poly_new();
     }
     poly *f = poly_new();
     int *coeffs = (int *)malloc((deg + 1) * sizeof(int));
@@ -267,7 +258,7 @@ poly *poly_new_from_copy(poly *source)
 {
     int deg = source->degree;
     if (deg == -1)
-        return poly_new_0();
+        return poly_new();
     poly *copy = poly_new();
     int *coeffs = (int *)malloc((deg + 1) * sizeof(int));
     assert(coeffs);
@@ -301,21 +292,17 @@ void poly_clear(poly *f)
 void poly_clear_full(poly *f)
 {
     f->degree = -1;
-    assert(f->coeffs);
     free(f->coeffs);
     f->coeffs = NULL;
 }
 
 void poly_free(poly *f)
 {
-    assert(f);
     free(f);
 }
 
 void poly_free_full(poly *f)
 {
-    assert(f);
-    assert(f->coeffs);
     free(f->coeffs);
     free(f);
 }
@@ -342,8 +329,7 @@ void poly_add(poly *rop, poly *op1, poly *op2)
     else if (op1->degree == -1)
     {
         deg = -1;
-        coeffs = (int *)calloc(1, sizeof(int));
-        assert(coeffs);
+        coeffs = NULL;
     }
     else
     {
@@ -353,8 +339,7 @@ void poly_add(poly *rop, poly *op1, poly *op2)
         if (i == -1)
         {
             deg = -1;
-            coeffs = (int *)calloc(1, sizeof(int));
-            assert(coeffs);
+            coeffs = NULL;
         }
         else
         {
@@ -399,8 +384,7 @@ void poly_sub(poly *rop, poly *op1, poly *op2)
     else if (op1->degree == -1)
     {
         deg = -1;
-        coeffs = (int *)calloc(1, sizeof(int));
-        assert(coeffs);
+        coeffs = NULL;
     }
     else
     {
@@ -410,8 +394,7 @@ void poly_sub(poly *rop, poly *op1, poly *op2)
         if (i == -1)
         {
             deg = -1;
-            coeffs = (int *)calloc(1, sizeof(int));
-            assert(coeffs);
+            coeffs = NULL;
         }
         else
         {
@@ -434,8 +417,7 @@ void poly_mul(poly *rop, poly *op1, poly *op2)
     if (op1->degree == -1 || op2->degree == -1)
     {
         deg = -1;
-        coeffs = (int *)calloc(1, sizeof(int));
-        assert(coeffs);
+        coeffs = NULL;
     }
     else
     {
@@ -458,8 +440,7 @@ void poly_mul_scalar(poly *rop, int op1, poly *op2)
     if (op1 == 0 || op2->degree == -1)
     {
         deg = -1;
-        coeffs = (int *)calloc(1, sizeof(int));
-        assert(coeffs);
+        coeffs = NULL;
     }
     else
     {
@@ -496,10 +477,12 @@ void poly_euc_div(poly *q, poly *r, poly *op1, poly *op2)
             deg_r--;
     }
     if (deg_r == -1)
-        coeffs_r = (int *)calloc(1, sizeof(int));
+        coeffs_r = NULL;
     else
+    {
         coeffs_r = (int *)malloc((deg_r + 1) * sizeof(int));
-    assert(coeffs_r);
+        assert(coeffs_r);
+    }
     for (int i = 0; i <= deg_r; i++)
         coeffs_r[i] = rest[i];
     free(rest);
@@ -511,9 +494,9 @@ void poly_xgcd(poly **d, poly **u, poly **v, poly *op1, poly *op2)
 {
     *d = poly_new_from_copy(op1);
     *u = poly_new_1();
-    *v = poly_new_0();
+    *v = poly_new();
     poly *r1 = poly_new_from_copy(op2);
-    poly *u1 = poly_new_0();
+    poly *u1 = poly_new();
     poly *v1 = poly_new_1();
     while (r1->degree > -1)
     {
@@ -537,6 +520,7 @@ void poly_xgcd(poly **d, poly **u, poly **v, poly *op1, poly *op2)
         u1 = u2;
         v1 = v2;
     }
+    // We want monic polynomials.
     int inv_LC_d = zp_inv((*d)->coeffs[(*d)->degree]);
     poly_mul_scalar(*d, inv_LC_d, *d);
     poly_mul_scalar(*u, inv_LC_d, *u);
@@ -550,9 +534,9 @@ void poly_xgcd_partial(poly **d, poly **u, poly **v, poly *op1, poly *op2, int n
 {
     *d = poly_new_from_copy(op1);
     *u = poly_new_1();
-    *v = poly_new_0();
+    *v = poly_new();
     poly *r1 = poly_new_from_copy(op2);
-    poly *u1 = poly_new_0();
+    poly *u1 = poly_new();
     poly *v1 = poly_new_1();
     while (n <= (*d)->degree)
     {
@@ -590,8 +574,7 @@ void poly_deriv(poly *rop, poly *op)
     if (op->degree < 1)
     {
         deg = -1;
-        coeffs = (int *)calloc(1, sizeof(int));
-        assert(coeffs);
+        coeffs = NULL;
     }
     else
     {
@@ -647,16 +630,16 @@ poly *interpolation(int *a, int *b, int n)
     poly *f = poly_new_1();
     for (int i = 0; i < n; i++)
     {
-        poly *x_m_ai = poly_new_from_coeffs(1, zp_opp(a[i]), 1);
+        poly *x_m_ai = poly_new_from_poly_coeffs(1, zp_opp(a[i]), 1);
         poly_mul(f, f, x_m_ai);
         poly_free_full(x_m_ai);
     }
     poly *fd = poly_new();
     poly_deriv(fd, f);
-    poly *g = poly_new_0();
+    poly *g = poly_new();
     for (int i = 0; i < n; i++)
     {
-        poly *x_m_ai = poly_new_from_coeffs(1, zp_opp(a[i]), 1);
+        poly *x_m_ai = poly_new_from_poly_coeffs(1, zp_opp(a[i]), 1);
         int fd_ai = poly_eval(fd, a[i]);
         poly_mul_scalar(x_m_ai, fd_ai, x_m_ai);
         poly *l_i = poly_new();
@@ -828,8 +811,7 @@ void poly_inv_fft(poly *f, int *eval)
     int *coeffs;
     if (degree == -1)
     {
-        coeffs = (int *)calloc(1, sizeof(int));
-        assert(coeffs);
+        coeffs = NULL;
     }
     else
     {
