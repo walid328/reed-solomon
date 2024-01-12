@@ -3,38 +3,38 @@
 
 #include "finite_field.h"
 
-int mod_zp(int n)
+int zp_mod(int n)
 {
     int m = n % p;
     return m >= 0 ? m : m + p;
 }
 
-int add_zp(int n, int m)
+int zp_add(int n, int m)
 {
-    return mod_zp(n + m);
+    return zp_mod(n + m);
 }
 
-int sub_zp(int n, int m)
+int zp_sub(int n, int m)
 {
-    return mod_zp(n - m);
+    return zp_mod(n - m);
 }
 
-int opp_zp(int n)
+int zp_opp(int n)
 {
-    return mod_zp(-n);
+    return zp_mod(-n);
 }
 
-int mul_zp(int n, int m)
+int zp_mul(int n, int m)
 {
-    return mod_zp(n * m);
+    return zp_mod(n * m);
 }
 
-int rand_zp()
+int zp_rand()
 {
-    return mod_zp((rand() << 24) ^ (rand() << 16) ^ (rand() << 8) ^ rand());
+    return zp_mod((rand() << 24) ^ (rand() << 16) ^ (rand() << 8) ^ rand());
 }
 
-int inv_zp(int n)
+int zp_inv(int n)
 {
     if (n == 0)
     {
@@ -61,35 +61,35 @@ int inv_zp(int n)
     return v1;
 }
 
-int exp_zp(int base, int exp)
+int zp_exp(int base, int exp)
 {
     int res = 1;
     while (exp > 0)
     {
         if (exp & 1)
-            res = mul_zp(res, base);
+            res = zp_mul(res, base);
         exp >>= 1;
-        base = mul_zp(base, base);
+        base = zp_mul(base, base);
     }
     return res;
 }
 
-int primitive_root_zp(int q, int d)
+int zp_prim_root(int q, int d)
 {
     int x, g;
     do
     {
-        x = rand_zp();
-        g = exp_zp(x, q);
-    } while (x == 0 || exp_zp(g, d / 2) == 1);
+        x = zp_rand();
+        g = zp_exp(x, q);
+    } while (x == 0 || zp_exp(g, d / 2) == 1);
     return g;
 }
 
-int min_primitive_root_zp(int q, int d)
+int zp_prim_root_min(int q, int d)
 {
 	if (d == 1) return 1;
 	int x = 2;
-	while (exp_zp(x, d / 2) != p-1)
+	while (zp_exp(x, d / 2) != p-1)
 		x++;
     return x;
 }

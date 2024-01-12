@@ -5,10 +5,10 @@
 #include "polynomial.h"
 #include "finite_field.h"
 
-void print_tab(int *T, int n)
+void array_print(int *tab, int tab_size)
 {
-	for (int i = 0; i < n; i++)
-		printf("%d ", T[i]);
+	for (int i = 0; i < tab_size; i++)
+		printf("%d ", tab[i]);
 	printf("\n");
 }
 
@@ -20,74 +20,74 @@ int main(int argc, char **argv)
 	printf("Test des opération de base:\n");
 
 	printf("\nLes polynômes:\n");
-	poly *f = new_poly_from_coeffs(2, 5, 4, 3);
-	print_poly(f);
-	poly *g = new_poly_from_coeffs(2, 1, 3, 2);
-	print_poly(g);
+	poly *f = poly_new_from_coeffs(2, 5, 4, 3);
+	poly_print(f);
+	poly *g = poly_new_from_coeffs(2, 1, 3, 2);
+	poly_print(g);
 
 	printf("La somme:\n");
-	poly *sum = new_poly();
-	add_poly(sum, f, g);
-	print_poly(sum);
-	free_full_poly(sum);
+	poly *sum = poly_new();
+	poly_add(sum, f, g);
+	poly_print(sum);
+	poly_free_full(sum);
 
 	printf("La différence:\n");
-	poly *dif = new_poly();
-	sub_poly(dif, f, g);
-	print_poly(dif);
-	free_full_poly(dif);
+	poly *dif = poly_new();
+	poly_sub(dif, f, g);
+	poly_print(dif);
+	poly_free_full(dif);
 
 	printf("Le produit:\n");
-	poly *prod = new_poly();
-	poly *prod_fft = new_poly();
-	mul_poly(prod, f, g);
+	poly *prod = poly_new();
+	poly *prod_fft = poly_new();
+	poly_mul(prod, f, g);
 	poly_mul_fft(prod_fft, f, g);
-	print_poly(prod);
-	print_poly(prod_fft);
-	free_full_poly(prod);
-	free_full_poly(prod_fft);
+	poly_print(prod);
+	poly_print(prod_fft);
+	poly_free_full(prod);
+	poly_free_full(prod_fft);
 
 	printf("La multiplication par un scalaire:\n");
 	int x = 10;
-	poly *xf = new_poly();
-	mul_scalar_poly(xf, x, f);
-	print_poly(xf);
-	free_full_poly(xf);
+	poly *xf = poly_new();
+	poly_mul_scalar(xf, x, f);
+	poly_print(xf);
+	poly_free_full(xf);
 
 	printf("Le quotient et le reste:\n");
-	poly *quo = new_poly();
-	poly *rem = new_poly();
-	euclid_div_poly(quo, rem, f, g);
-	print_poly(quo);
-	print_poly(rem);
-	free_full_poly(quo);
-	free_full_poly(rem);
+	poly *quo = poly_new();
+	poly *rem = poly_new();
+	poly_euc_div(quo, rem, f, g);
+	poly_print(quo);
+	poly_print(rem);
+	poly_free_full(quo);
+	poly_free_full(rem);
 
 	printf("Euclide étendu:\n");
 	poly *d, *u, *v;
-	xgcd_poly(&d, &u, &v, f, g);
-	print_poly(d);
-	print_poly(u);
-	print_poly(v);
-	free_full_poly(d);
-	free_full_poly(u);
-	free_full_poly(v);
+	poly_xgcd(&d, &u, &v, f, g);
+	poly_print(d);
+	poly_print(u);
+	poly_print(v);
+	poly_free_full(d);
+	poly_free_full(u);
+	poly_free_full(v);
 
-	free_full_poly(f);
-	free_full_poly(g);
+	poly_free_full(f);
+	poly_free_full(g);
 
 	printf("\nTest de l'interpolation:\n");
 
 	int n = 11;
 	int a[] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
-	f = new_poly_from_coeffs(n - 1, 231, 142, 229, 200, 0, 12, 2, 3, 123, 8, 28);
-	print_poly(f);
+	f = poly_new_from_coeffs(n - 1, 231, 142, 229, 200, 0, 12, 2, 3, 123, 8, 28);
+	poly_print(f);
 	int b[n + 1];
-	multi_eval_poly(f, n, a, b);
-	free_full_poly(f);
+	poly_eval_multi(f, n, a, b);
+	poly_free_full(f);
 	g = interpolation(a, b, n);
-	print_poly(g);
-	free_full_poly(g);
+	poly_print(g);
+	poly_free_full(g);
 
 	printf("\nTest des codes de Reed-Solomon\n");
 	n = 7;
@@ -95,27 +95,27 @@ int main(int argc, char **argv)
 	printf("Pour le message:\n");
 	int k = 3;
 	int M[] = {1, 2, 3};
-	print_tab(M, k);
+	array_print(M, k);
 	printf("Le mot de code est:\n");
 	int C[n];
-	encoding(C, A, n, M, k);
-	print_tab(C, n);
+	rs_encode(C, A, n, M, k);
+	array_print(C, n);
 	printf("Le message reçu avec erreurs est:\n");
 	int B[] = {1, 6, 123, 456, 57, 86, 121};
-	print_tab(B, n);
+	array_print(B, n);
 	printf("Avec la méthode de Gao, on trouve:\n");
 	int m[k];
-	decoding(m, A, B, n, k);
-	print_tab(m, k);
+	rs_decode(m, A, B, n, k);
+	array_print(m, k);
 
 	printf("\nTest de l'exponentiation modulaire:\n");
 	int base = 146;
 	int exp = 151;
-	int res = exp_zp(base, exp);
+	int res = zp_exp(base, exp);
 	printf("%d^%d mod %d = %d\n", base, exp, p, res);
 
 	printf("\nTest de racine primitive de l'unité\n");
-	int G = primitive_root_zp(Q, D);
+	int G = zp_prim_root(Q, D);
 	printf("%d\n", G);
 
 	printf("\nTest split array:\n");
@@ -123,49 +123,49 @@ int main(int argc, char **argv)
 	int *tab = malloc(tab_size * sizeof(int));
 	for (int i = 0; i < tab_size; i++)
 		tab[i] = i;
-	print_tab(tab, tab_size);
+	array_print(tab, tab_size);
 	int *even_tab = NULL;
 	int even_size = 0;
 	int *odd_tab = NULL;
 	int odd_size = 0;
-	split_all_array(&even_tab, &even_size, &odd_tab, &odd_size, tab, tab_size);
-	print_tab(even_tab, even_size);
-	print_tab(odd_tab, odd_size);
+	array_split_all(&even_tab, &even_size, &odd_tab, &odd_size, tab, tab_size);
+	array_print(even_tab, even_size);
+	array_print(odd_tab, odd_size);
 	free(even_tab);
 	free(odd_tab);
 	free(tab);
 
 	printf("\nTest split poly:\n");
-	poly *t = new_poly_from_coeffs(10, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10);
-	print_poly(t);
-	poly *even = new_poly();
-	poly *odd = new_poly();
-	split_poly(even, odd, t);
-	print_poly(even);
-	print_poly(odd);
-	free_full_poly(t);
-	free_full_poly(even);
-	free_full_poly(odd);
+	poly *t = poly_new_from_coeffs(10, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10);
+	poly_print(t);
+	poly *even = poly_new();
+	poly *odd = poly_new();
+	poly_split(even, odd, t);
+	poly_print(even);
+	poly_print(odd);
+	poly_free_full(t);
+	poly_free_full(even);
+	poly_free_full(odd);
 
 	printf("\nTest fft:\n");
-	int omega = min_primitive_root_zp(Q, D);
+	int omega = zp_prim_root_min(Q, D);
 	printf("q : %d , d : %d\n", Q, D);
 	printf("omega : %d\n", omega);
-	poly *fftest = new_rand_poly(10);
+	poly *fftest = poly_new_rand(10);
 	int *eval_fft;
 	int *eval_dft;
 	poly_fft(fftest, &eval_fft);
 	poly_dft(fftest, &eval_dft);
-	print_tab(eval_fft, D);
-	print_tab(eval_dft, D);
+	array_print(eval_fft, D);
+	array_print(eval_dft, D);
 
-	poly *test_fftest = new_poly();
+	poly *test_fftest = poly_new();
 	poly_inv_fft(test_fftest, eval_fft);
-	print_poly(fftest);
-	print_poly(test_fftest);
+	poly_print(fftest);
+	poly_print(test_fftest);
 
-	free_full_poly(fftest);
-	free_full_poly(test_fftest);
+	poly_free_full(fftest);
+	poly_free_full(test_fftest);
 	free(eval_fft);
 	free(eval_dft);
 

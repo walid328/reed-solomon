@@ -6,51 +6,51 @@
 #include "polynomial.h"
 #include "finite_field.h"
 
-void encoding(int *c, int *a, int n, int *m, int k)
+void rs_encode(int *c, int *a, int n, int *m, int k)
 {
-    poly *f = new_poly();
-    set_poly(f, k - 1, m);
-    multi_eval_poly(f, n, a, c);
-    free_poly(f);
+    poly *f = poly_new();
+    poly_set(f, k - 1, m);
+    poly_eval_multi(f, n, a, c);
+    poly_free(f);
 }
 
-void decoding(int *m, int *a, int *b, int n, int k)
+void rs_decode(int *m, int *a, int *b, int n, int k)
 {
-    poly *g_0 = new_poly_1();
+    poly *g_0 = poly_new_1();
     for (int i = 0; i < n; i++)
     {
-        poly *x_m_ai = new_poly_from_coeffs(1, opp_zp(a[i]), 1);
-        mul_poly(g_0, g_0, x_m_ai);
-        free_full_poly(x_m_ai);
+        poly *x_m_ai = poly_new_from_coeffs(1, zp_opp(a[i]), 1);
+        poly_mul(g_0, g_0, x_m_ai);
+        poly_free_full(x_m_ai);
     }
     poly *g_1 = interpolation(a, b, n);
     poly *g, *u, *v;
-    partial_gcd_poly(&g, &u, &v, g_0, g_1, (n + k) / 2);
-    poly *f_1 = new_poly();
-    poly *r = new_poly();
-    euclid_div_poly(f_1, r, g, v);
+    poly_xgcd_partial(&g, &u, &v, g_0, g_1, (n + k) / 2);
+    poly *f_1 = poly_new();
+    poly *r = poly_new();
+    poly_euc_div(f_1, r, g, v);
     if (degree(r) == -1 && degree(f_1) < k)
     {
         for (int i = 0; i < k; i++)
             m[i] = coeffs(f_1)[i];
-        free_full_poly(g_0);
-        free_full_poly(g_1);
-        free_full_poly(g);
-        free_full_poly(u);
-        free_full_poly(v);
-        free_full_poly(r);
-        free_full_poly(f_1);
+        poly_free_full(g_0);
+        poly_free_full(g_1);
+        poly_free_full(g);
+        poly_free_full(u);
+        poly_free_full(v);
+        poly_free_full(r);
+        poly_free_full(f_1);
     }
     else
     {
-        free_full_poly(g_0);
-        free_full_poly(g_1);
-        free_full_poly(g);
-        free_full_poly(u);
-        free_full_poly(v);
-        free_full_poly(r);
-        free_full_poly(f_1);
-        fprintf(stderr, "Decoding failure: too many errors!\n");
+        poly_free_full(g_0);
+        poly_free_full(g_1);
+        poly_free_full(g);
+        poly_free_full(u);
+        poly_free_full(v);
+        poly_free_full(r);
+        poly_free_full(f_1);
+        fprintf(stderr, "rs_decode failure: too many errors!\n");
         exit(EXIT_FAILURE);
     }
 }
