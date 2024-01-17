@@ -6,6 +6,7 @@
 
 #include "polynomial.h"
 #include "finite_field.h"
+#include "field_spec.h"
 
 struct polynomial
 {
@@ -712,7 +713,7 @@ void poly_split(poly *even, poly *odd, poly *f)
     poly_set(odd, odd_size - 1, coeffs_odd);
 }
 
-int *fft(int *f, int d, int omega)
+int *fft(int *f, int d)
 {
     if (d == 1)
     {
@@ -727,14 +728,10 @@ int *fft(int *f, int d, int omega)
         r0[i] = zp_add(f[i], f[i + d / 2]);
     int *r1 = (int *)malloc((d / 2) * sizeof(int));
     assert(r1);
-    int omega_i = 1;
     for (int i = 0; i < d / 2; i++)
-    {
-        r1[i] = zp_mul(zp_sub(f[i], f[i + d / 2]), omega_i);
-        omega_i = zp_mul(omega_i, omega);
-    }
-    int *eval_r0 = fft(r0, d / 2, zp_mul(omega, omega));
-    int *eval_r1 = fft(r1, d / 2, zp_mul(omega, omega));
+        r1[i] = zp_mul(zp_sub(f[i], f[i + d / 2]), omegas[i * (n / d)]);
+    int *eval_r0 = fft(r0, d / 2);
+    int *eval_r1 = fft(r1, d / 2);
     free(r0);
     free(r1);
     int *eval;
@@ -754,17 +751,16 @@ void poly_fft(poly *f, int **eval)
         fprintf(stderr, "poly_fft degree too high");
         exit(EXIT_FAILURE);
     }
-    int omega = zp_prim_root_min(q, d);
     int *coeffs = (int *)calloc(d, sizeof(int));
     assert(coeffs);
     for (int i = 0; i <= f->degree; i++)
         coeffs[i] = f->coeffs[i];
     // memcpy(coeffs, f->coeffs, (f->degree + 1) * sizeof(int));
-    *eval = fft(coeffs, d, omega);
+    *eval = fft(coeffs, d);
     free(coeffs);
 }
 
-int *inv_fft(int *eval, int d, int omega)
+int *inv_fft(int *eval, int d)
 {
     if (d == 1)
     {
@@ -776,16 +772,12 @@ int *inv_fft(int *eval, int d, int omega)
     int *eval_r0;
     int *eval_r1;
     array_split(&eval_r0, &eval_r1, eval, d);
-    int *r0 = inv_fft(eval_r0, d / 2, zp_mul(omega, omega));
-    int *r1 = inv_fft(eval_r1, d / 2, zp_mul(omega, omega));
+    int *r0 = inv_fft(eval_r0, d / 2);
+    int *r1 = inv_fft(eval_r1, d / 2);
     free(eval_r0);
     free(eval_r1);
-    int omega_i = omega;
     for (int i = 1; i <= d / 2; i++)
-    {
-        r1[d / 2 - i] = zp_opp(zp_mul(r1[d / 2 - i], omega_i));
-        omega_i = zp_mul(omega_i, omega);
-    }
+        r1[d / 2 - i] = zp_opp(zp_mul(r1[d / 2 - i], omegas[i * (n / d)]));
     int *f = (int *)malloc(d * sizeof(int));
     assert(f);
     for (int i = 0; i < d / 2; i++)
@@ -800,12 +792,8 @@ int *inv_fft(int *eval, int d, int omega)
 
 void poly_inv_fft(poly *f, int *eval)
 {
-    int q, d;
-    for (q = p - 1, d = 1; (q & 1) == 0; q >>= 1, d <<= 1)
-        ;
-    int omega = zp_prim_root_min(q, d);
-    int *f_coeffs = inv_fft(eval, d, omega);
-    int degree = d - 1;
+    int *f_coeffs = inv_fft(eval, n);
+    int degree = n - 1;
     while (degree >= 0 && f_coeffs[degree] == 0)
         degree--;
     int *coeffs;
@@ -824,21 +812,92 @@ void poly_inv_fft(poly *f, int *eval)
     poly_set(f, degree, coeffs);
 }
 
-void poly_mul_fft(poly *rop, poly *op1, poly *op2)
+int *formal_serie_mul(int *P, int *Q, int d)
 {
-    int q, d;
-    for (q = p - 1, d = 1; (q & 1) == 0; q >>= 1, d <<= 1)
-        ;
+    int *eval_P = fft(P, d);
+    int *eval_Q = fft(Q, d);
+    int *eval_res = (int *)malloc(d * sizeof(int));
+    assert(eval_res);
+    for (int i = 0; i < d; i++)
+        eval_res[i] = zp_mul(eval_P[i], eval_Q[i]);
+    int *res = inv_fft(eval_res, d);
+    free(eval_P);
+    free(eval_Q);
+    free(eval_res);
+    return res;
+}
+
+int *formal_serie_inv(int *P, int d)
+{
+    if (d == 2)
+    {
+        int *Q = (int *)malloc(sizeof(int));
+        assert(Q);
+        Q[0] = zp_inv(P[0]);
+        return Q;
+    }
+    int *Q_0 = formal_serie_inv(P, d / 2);
+    int *Q_0d = (int *)calloc(d, sizeof(int));
+    assert(Q_0d);
+    for (int i = 0; i < d / 4; i++)
+        Q_0d[i] = Q_0[i];
+    int *Q_a = formal_serie_mul(Q_0d, Q_0d, d);
+    int *P_0 = (int *)calloc(d, sizeof(int));
+    assert(P_0);
+    for (int i = 0; i < d / 2; i++)
+        P_0[i] = P[i];
+    int *Q_a2 = formal_serie_mul(P_0, Q_a, d);
+    int *Q = (int *)malloc(d * sizeof(int));
+    assert(Q);
+    for (int i = 0; i < d / 4; i++)
+        Q[i] = Q_0[i];
+    for (int i = d / 4; i < d / 2; i++)
+        Q[i] = zp_opp(Q_a2[i]);
+    free(Q_0);
+    free(Q_0d);
+    free(P_0);
+    free(Q_a);
+    free(Q_a2);
+    return Q;
+}
+
+void poly_rev(poly *rop, poly *op)
+{
+    int degree_rop = op->degree;
+    int *coeffs_rop = (int *)malloc(degree_rop * sizeof(int));
+    assert(coeffs_rop);
+    for (int i = 0; i < degree_rop; i++)
+        coeffs_rop[i] = op->coeffs[degree_rop - 1];
+    poly_set(rop, degree_rop, coeffs_rop);
+}
+
+void poly_fast_mul(poly *rop, poly *op1, poly *op2)
+{
     int *eval_op1 = NULL;
     poly_fft(op1, &eval_op1);
     int *eval_op2 = NULL;
     poly_fft(op2, &eval_op2);
-    int *eval_rop = (int *)malloc(d * sizeof(int));
+    int *eval_rop = (int *)malloc(n * sizeof(int));
     assert(eval_rop);
-    for (int i = 0; i < d; i++)
+    for (int i = 0; i < n; i++)
         eval_rop[i] = zp_mul(eval_op1[i], eval_op2[i]);
     poly_inv_fft(rop, eval_rop);
     free(eval_op1);
     free(eval_op2);
     free(eval_rop);
 }
+
+/*
+void poly_fast_euc_div(poly *q, poly *r, poly *op1, poly *op2, int d, int omega)
+{
+    int n = op1->degree;
+    int m = op2->degree;
+    poly *op1_rev = poly_new();
+    poly *op2_rev = poly_new();
+    int *op2_rev_tr = (int *)calloc(,sizeof(int));
+    for (int i = 0; i < n - m + 1; i++)
+        op2_rev_tr[i] = op2_rev->coeffs[i];
+
+    poly_free_full(op1_rev);
+    poly_free_full(op2_rev);
+}*/

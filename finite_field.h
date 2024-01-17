@@ -1,6 +1,5 @@
 #ifndef FINITE_FIELD_H
 #define FINITE_FIELD_H
-#define p 193
 
 // Basic operations in Z/pZ.
 
@@ -31,11 +30,11 @@ int zp_exp(int base, int exp);
 // Returns a d^th primitive root of unity in Z/pZ.
 // We should have p = dq + 1 where d is a power of 2,
 // and q is odd.
-int zp_prim_root(int q, int d);
+int zp_prim_root();
 
 // Returns the minimal d^th primitive root of unity in Z/pZ.
 // We should have p = dq + 1 where d is a power of 2,
 // and q is odd.
-int zp_prim_root_min(int q, int d);
+int zp_prim_root_min();
 
 #endif

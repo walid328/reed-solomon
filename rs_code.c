@@ -5,6 +5,7 @@
 #include "rs_code.h"
 #include "polynomial.h"
 #include "finite_field.h"
+#include "field_spec.h"
 
 void rs_encode(int *c, int *a, int n, int *m, int k)
 {
@@ -19,7 +20,7 @@ void rs_decode(int *m, int *a, int *b, int n, int k)
     poly *g_0 = poly_new_1();
     for (int i = 0; i < n; i++)
     {
-        poly *x_m_ai = poly_new_from_poly_coeffs(1, zp_opp(a[i]), 1);
+        poly *x_m_ai = poly_new_from_coeffs(1, zp_opp(a[i]), 1);
         poly_mul(g_0, g_0, x_m_ai);
         poly_free_full(x_m_ai);
     }

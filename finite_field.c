@@ -2,6 +2,7 @@
 #include <stdio.h>
 
 #include "finite_field.h"
+#include "field_spec.h"
 
 int zp_mod(int n)
 {
@@ -29,7 +30,7 @@ int zp_mul(int n, int m)
     return zp_mod(n * m);
 }
 
-int zp_rand()
+int zp_rand(void)
 {
     return zp_mod((rand() << 24) ^ (rand() << 16) ^ (rand() << 8) ^ rand());
 }
@@ -74,23 +75,23 @@ int zp_exp(int base, int exp)
     return res;
 }
 
-int zp_prim_root(int q, int d)
+int zp_prim_root(void)
 {
     int x, g;
     do
     {
         x = zp_rand();
         g = zp_exp(x, q);
-    } while (x == 0 || zp_exp(g, d / 2) == 1);
+    } while (zp_exp(g, n / 2) != p - 1);
     return g;
 }
 
-int zp_prim_root_min(int q, int d)
+int zp_prim_root_min(void)
 {
-	if (d == 1) return 1;
-	int x = 2;
-	while (zp_exp(x, d / 2) != p-1)
-		x++;
-    return x;
+    if (n == 1)
+        return 1;
+    int g = 2;
+    while (zp_exp(g, n / 2) != p - 1)
+        g++;
+    return g;
 }
-

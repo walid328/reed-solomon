@@ -151,18 +151,24 @@ void poly_split(poly *even, poly *odd, poly *f);
 
 // fast fourier transform for d a power of twoo
 // omega should be a d^th primitive root of unity
-int *fft(int *f, int d, int omega);
+int *fft(int *f, int d);
 
 // fft for polynomials
 void poly_fft(poly *f, int **eval);
 
 // inverse fft in int* format
-int *inv_fft(int *eval, int d, int omega);
+int *inv_fft(int *eval, int d);
 
 // inverse fft in poly format
 void poly_inv_fft(poly *f, int *eval);
 
 // Polynomial multiplication using fft.
-void poly_mul_fft(poly *rop, poly *op1, poly *op2);
+void poly_fast_mul(poly *rop, poly *op1, poly *op2);
+
+int *formal_serie_mul(int *P, int *Q, int d);
+
+// Compute the inverse of a formal serie and stores it a
+// provided polynomial entry.
+int *formal_serie_inv(int *P, int d);
 
 #endif
