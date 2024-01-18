@@ -1,3 +1,5 @@
+#include <stdlib.h>
+
 #include "field_spec.h"
 #include "finite_field.h"
 

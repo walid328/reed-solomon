@@ -7,6 +7,6 @@ extern int n;
 extern int omega;
 extern int *omegas;
 
-void update_field_spec();
+void update_field_spec(void);
 
 #endif

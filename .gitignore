@@ -2,3 +2,4 @@
 main
 main.exe
 *.o
+test_polynomial
