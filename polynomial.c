@@ -930,7 +930,7 @@ void formal_serie_fast_euc_div(int **quo, int **rem, int *op_p, int deg_p, int *
 	for (int i = 0; (i < (deg_p - deg_d + 1)) && (i < (deg_d + 1)); i++)
 		op_dp[i] = op_d[deg_d - i];
 	int *op_dpp = formal_serie_inv(op_dp, dnmm);
-	int *qp = formal_serie_mul(op_pp, op_dpp, dnmm);
+	int *qp = formal_serie_mul(op_pp, op_dpp, 2 * dnmm);
 	*quo = (int *)malloc(deg_p - deg_d + 1 * sizeof(int));
 	ASSERT(*quo);
 	for (int i = 0; i < deg_p - deg_d + 1; i++)
@@ -943,7 +943,7 @@ void formal_serie_fast_euc_div(int **quo, int **rem, int *op_p, int deg_p, int *
 	ASSERT(op_ddm);
 	for (int i = 0; i < deg_d; i++)
 		op_ddm[i] = op_d[i];
-	int *qd = formal_serie_mul(qdm, op_ddm, dm);
+	int *qd = formal_serie_mul(qdm, op_ddm, 2 * dm);
 	*rem = (int *)malloc(deg_d * sizeof(int));
 	ASSERT(*rem);
 	for (int i = 0; i < deg_d; i++)
