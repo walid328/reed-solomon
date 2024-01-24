@@ -115,6 +115,21 @@ int main(int argc, char **argv)
 
 	poly_free_full(serie_A);
 	poly_free_full(serie_B);
+	
+	printf("\nTest division euclidienne rapide\n");
+	poly *numerator = poly_new_rand(6);
+	poly *denominator = poly_new_rand(4);
+	poly *remainder = poly_new();
+	poly *quotient = poly_new();
+	poly_fast_euc_div(quotient, remainder, numerator, denominator);
+	poly_print(numerator);
+	poly_print(denominator);
+	poly_print(quotient);
+	poly_print(remainder);
+	poly_free_full(numerator);
+	poly_free_full(denominator);
+	poly_free_full(quotient);
+	poly_free_full(remainder);
 
 	free(omegas);
 	return EXIT_SUCCESS;

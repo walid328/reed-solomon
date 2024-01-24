@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "assert.h"
 #include "field_spec.h"
 #include "polynomial.h"
 #include "finite_field.h"
@@ -13,15 +14,6 @@ int n = 0;
 int omega = 0;
 int *omegas = NULL;
 
-#define ASSERT(expr)                                                                        \
-    do                                                                                      \
-    {                                                                                       \
-        if ((expr) == 0)                                                                    \
-        {                                                                                   \
-            fprintf(stderr, "[%s:%d] Assertion '%s' failed!\n", __FILE__, __LINE__, #expr); \
-            abort();                                                                        \
-        }                                                                                   \
-    } while (0)
 
 void usage(int argc, char *argv[])
 {

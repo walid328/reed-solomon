@@ -17,7 +17,7 @@ test_polynomial: test_polynomial.o $(OBJFILES)
 .PHONY:clean test
 
 clean:
-	rm -r *.o $(TARGET)
+	rm -r *.o $(TARGET) test_polynomial.exe
 
 test:
 	./test_polynomial "new_free"

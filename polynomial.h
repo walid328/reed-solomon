@@ -162,13 +162,25 @@ int *inv_fft(int *eval, int d);
 // inverse fft in poly format
 void poly_inv_fft(poly *f, int *eval);
 
+int *formal_serie_mul(int *P, int *Q, int d);
+
+// Compute the d first coefficients of the inverse serie of P
+// P should be at least of size d.
+// d should be a power of 2 and 2*d should divide p-1.
+int *formal_serie_inv(int *P, int d);
+
+void poly_rev(poly *rop, poly *op);
+
 // Polynomial multiplication using fft.
 void poly_fast_mul(poly *rop, poly *op1, poly *op2);
 
-int *formal_serie_mul(int *P, int *Q, int d);
+void poly_fast_euc_div(poly *quo, poly *rem, poly *op1, poly *op2);
 
-// Compute the inverse of a formal serie and stores it a
-// provided polynomial entry.
-int *formal_serie_inv(int *P, int d);
-
+// deg_p is the degree of op_p, op_p should be at least of size deg_p + 1.
+// deg_d is the degree of op_d, op_d should be at least of size deg_d + 1.
+// It compute the quotient and rest in the euclidian division of op_p by op_d.
+// It store them in quo and rem
+// quo will be of degree deg_p - deg_d and of size deg_p - deg_d + 1.
+// rem will be of degree at most deg_d - 1 and is always of size deg_d, padding with 0.
+void formal_serie_fast_euc_div(int **quo, int **rem, int *op_p, int deg_p, int *op_d, int deg_d);
 #endif

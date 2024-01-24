@@ -1,6 +1,5 @@
 #include <stdlib.h>
 #include <stdio.h>
-#include <assert.h>
 
 #include "rs_code.h"
 #include "polynomial.h"

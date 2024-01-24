@@ -1,9 +1,9 @@
 #include <stdlib.h>
 #include <stdio.h>
-#include <assert.h>
 #include <string.h>
 #include <stdarg.h>
 
+#include "assert.h"
 #include "polynomial.h"
 #include "finite_field.h"
 #include "field_spec.h"
@@ -72,7 +72,7 @@ char *str_poly_iso_length(poly *q)
     if (q->degree == -1)
     {
         char *poly_string = (char *)malloc(2 * sizeof(char));
-        assert(poly_string);
+        ASSERT(poly_string);
         poly_string[0] = '0';
         poly_string[1] = '\0';
         return poly_string;
@@ -80,7 +80,7 @@ char *str_poly_iso_length(poly *q)
     int size_p = size_int_str(p);
     int size_d = size_int_str(q->degree);
     char *poly_string = (char *)malloc(((size_p + size_d + 6) * (q->degree + 1) + 1) * sizeof(char));
-    assert(poly_string);
+    ASSERT(poly_string);
     int index = 0;
     for (int i = 0; i <= q->degree; i++)
     {
@@ -127,7 +127,7 @@ void poly_print(poly *q)
 poly *poly_new(void)
 {
     poly *f = (poly *)malloc(sizeof(poly));
-    assert(f);
+    ASSERT(f);
     poly_set(f, -1, NULL);
     return f;
 }
@@ -136,7 +136,7 @@ poly *poly_new_1(void)
 {
     poly *f = poly_new();
     int *coeffs = (int *)malloc(1 * sizeof(int));
-    assert(coeffs);
+    ASSERT(coeffs);
     coeffs[0] = 1;
     poly_set(f, 0, coeffs);
     return f;
@@ -148,7 +148,7 @@ poly *poly_new_from_coeffs(int deg, ...)
         return poly_new();
     poly *f = poly_new();
     int *coeffs = (int *)malloc((deg + 1) * sizeof(int));
-    assert(coeffs);
+    ASSERT(coeffs);
     va_list valist;
     va_start(valist, deg);
     for (int i = 0; i <= deg; i++)
@@ -188,7 +188,7 @@ int *coeffs_from_str(char *str, int *deg)
     int i = 0;
     int t = 100;
     int *coeffs = (int *)calloc(t, sizeof(int));
-    assert(coeffs);
+    ASSERT(coeffs);
     int exp;
     for (int coeff = next_coeff(str, &i); i != -10; coeff = next_coeff(str, &i))
     {
@@ -216,7 +216,7 @@ int *coeffs_from_str(char *str, int *deg)
                 if (t <= exp)
                 {
                     int *new_coeffs = (int *)calloc(2 * exp, sizeof(int));
-                    assert(new_coeffs);
+                    ASSERT(new_coeffs);
                     for (int j = 0; j < t; j++)
                         new_coeffs[j] = coeffs[j];
                     free(coeffs);
@@ -247,7 +247,7 @@ poly *poly_new_from_str(char *str)
     }
     poly *f = poly_new();
     int *coeffs = (int *)malloc((deg + 1) * sizeof(int));
-    assert(coeffs);
+    ASSERT(coeffs);
     for (int i = 0; i <= deg; i++)
         coeffs[i] = coeffs_str[i];
     free(coeffs_str);
@@ -262,7 +262,7 @@ poly *poly_new_from_copy(poly *source)
         return poly_new();
     poly *copy = poly_new();
     int *coeffs = (int *)malloc((deg + 1) * sizeof(int));
-    assert(coeffs);
+    ASSERT(coeffs);
     for (int i = 0; i <= deg; i++)
         coeffs[i] = source->coeffs[i];
     poly_set(copy, deg, coeffs);
@@ -273,7 +273,7 @@ poly *poly_new_rand(int deg)
 {
     poly *f = poly_new();
     int *coeffs = (int *)malloc((deg + 1) * sizeof(int));
-    assert(coeffs);
+    ASSERT(coeffs);
     for (int i = 0; i <= deg; i++)
         coeffs[i] = zp_rand();
     while (coeffs[deg] == 0)
@@ -320,7 +320,7 @@ void poly_add(poly *rop, poly *op1, poly *op2)
         poly *min = op1->degree > op2->degree ? op2 : op1;
         deg = max->degree;
         coeffs = (int *)malloc((deg + 1) * sizeof(poly));
-        assert(coeffs);
+        ASSERT(coeffs);
         int i;
         for (i = 0; i <= min->degree; i++)
             coeffs[i] = zp_add(op1->coeffs[i], op2->coeffs[i]);
@@ -346,7 +346,7 @@ void poly_add(poly *rop, poly *op1, poly *op2)
         {
             deg = i;
             coeffs = (int *)malloc((deg + 1) * sizeof(int));
-            assert(coeffs);
+            ASSERT(coeffs);
             for (int j = 0; j <= deg; j++)
                 coeffs[j] = zp_add(op1->coeffs[j], op2->coeffs[j]);
         }
@@ -364,7 +364,7 @@ void poly_sub(poly *rop, poly *op1, poly *op2)
     {
         deg = op1->degree;
         coeffs = (int *)malloc((deg + 1) * sizeof(int));
-        assert(coeffs);
+        ASSERT(coeffs);
         int i;
         for (i = 0; i <= op2->degree; i++)
             coeffs[i] = zp_sub(op1->coeffs[i], op2->coeffs[i]);
@@ -375,7 +375,7 @@ void poly_sub(poly *rop, poly *op1, poly *op2)
     {
         deg = op2->degree;
         coeffs = (int *)malloc((deg + 1) * sizeof(int));
-        assert(coeffs);
+        ASSERT(coeffs);
         int i;
         for (i = 0; i <= op1->degree; i++)
             coeffs[i] = zp_sub(op1->coeffs[i], op2->coeffs[i]);
@@ -401,7 +401,7 @@ void poly_sub(poly *rop, poly *op1, poly *op2)
         {
             deg = i;
             coeffs = (int *)malloc((deg + 1) * sizeof(int));
-            assert(coeffs);
+            ASSERT(coeffs);
             for (int j = 0; j <= deg; j++)
                 coeffs[j] = zp_sub(op1->coeffs[j], op2->coeffs[j]);
         }
@@ -424,7 +424,7 @@ void poly_mul(poly *rop, poly *op1, poly *op2)
     {
         deg = op1->degree + op2->degree;
         coeffs = (int *)calloc(deg + 1, sizeof(int));
-        assert(coeffs);
+        ASSERT(coeffs);
         for (int i = 0; i <= op1->degree; i++)
             for (int j = 0; j <= op2->degree; j++)
                 coeffs[i + j] = zp_add(coeffs[i + j], zp_mul(op1->coeffs[i], op2->coeffs[j]));
@@ -447,7 +447,7 @@ void poly_mul_scalar(poly *rop, int op1, poly *op2)
     {
         deg = op2->degree;
         coeffs = (int *)malloc((deg + 1) * sizeof(int));
-        assert(coeffs);
+        ASSERT(coeffs);
         for (int i = 0; i <= deg; i++)
             coeffs[i] = zp_mul(op2->coeffs[i], op1);
     }
@@ -465,7 +465,7 @@ void poly_euc_div(poly *q, poly *r, poly *op1, poly *op2)
         rest[i] = op1->coeffs[i];
     deg_q = op1->degree - op2->degree;
     coeffs_q = (int *)calloc(deg_q + 1, sizeof(int));
-    assert(coeffs_q);
+    ASSERT(coeffs_q);
     deg_r = op1->degree;
     int inv_LC_op2 = zp_inv(op2->coeffs[op2->degree]);
     while (deg_r >= op2->degree)
@@ -482,7 +482,7 @@ void poly_euc_div(poly *q, poly *r, poly *op1, poly *op2)
     else
     {
         coeffs_r = (int *)malloc((deg_r + 1) * sizeof(int));
-        assert(coeffs_r);
+        ASSERT(coeffs_r);
     }
     for (int i = 0; i <= deg_r; i++)
         coeffs_r[i] = rest[i];
@@ -581,7 +581,7 @@ void poly_deriv(poly *rop, poly *op)
     {
         deg = op->degree - 1;
         coeffs = (int *)malloc((deg + 1) * sizeof(int));
-        assert(coeffs);
+        ASSERT(coeffs);
         for (int i = 0; i <= deg; i++)
             coeffs[i] = zp_mul(i + 1, op->coeffs[i + 1]);
     }
@@ -620,7 +620,7 @@ void poly_dft(poly *f, int **eval)
     }
     int omega = zp_prim_root_min(q, d);
     *eval = (int *)malloc(d * sizeof(int));
-    assert(*eval);
+    ASSERT(*eval);
     int omega_i = 1;
     for (int i = 0; i < d; i++, omega_i = zp_mul(omega_i, omega))
         (*eval)[i] = poly_eval(f, omega_i);
@@ -666,9 +666,9 @@ void array_split_all(int **even, int *even_size, int **odd, int *odd_size, int *
     if (tab_size & 1)
         (*even_size)++;
     *even = (int *)malloc(*even_size * sizeof(int));
-    assert(*even);
+    ASSERT(*even);
     *odd = (int *)malloc(*odd_size * sizeof(int));
-    assert(*odd);
+    ASSERT(*odd);
     int even_cnt = 0;
     int odd_cnt = 0;
     for (int i = 0; i < tab_size; i++)
@@ -681,9 +681,9 @@ void array_split_all(int **even, int *even_size, int **odd, int *odd_size, int *
 void array_split(int **even, int **odd, int *tab, int tab_size)
 {
     *even = (int *)malloc(tab_size / 2 * sizeof(int));
-    assert(even);
+    ASSERT(even);
     *odd = (int *)malloc(tab_size / 2 * sizeof(int));
-    assert(odd);
+    ASSERT(odd);
     for (int i = 0; i < tab_size / 2; i++)
     {
         (*even)[i] = tab[2 * i];
@@ -694,7 +694,7 @@ void array_split(int **even, int **odd, int *tab, int tab_size)
 void array_merge(int **tab, int *even, int *odd, int subtab_size)
 {
     *tab = (int *)malloc(2 * subtab_size * sizeof(int));
-    assert(*tab);
+    ASSERT(*tab);
     for (int i = 0; i < subtab_size; i++)
     {
         (*tab)[2 * i] = even[i];
@@ -718,16 +718,16 @@ int *fft(int *f, int d)
     if (d == 1)
     {
         int *eval = (int *)malloc(sizeof(int));
-        assert(eval);
+        ASSERT(eval);
         eval[0] = f[0];
         return eval;
     }
     int *r0 = (int *)malloc((d / 2) * sizeof(int));
-    assert(r0);
+    ASSERT(r0);
     for (int i = 0; i < d / 2; i++)
         r0[i] = zp_add(f[i], f[i + d / 2]);
     int *r1 = (int *)malloc((d / 2) * sizeof(int));
-    assert(r1);
+    ASSERT(r1);
     for (int i = 0; i < d / 2; i++)
         r1[i] = zp_mul(zp_sub(f[i], f[i + d / 2]), omegas[i * (n / d)]);
     int *eval_r0 = fft(r0, d / 2);
@@ -752,7 +752,7 @@ void poly_fft(poly *f, int **eval)
         exit(EXIT_FAILURE);
     }
     int *coeffs = (int *)calloc(d, sizeof(int));
-    assert(coeffs);
+    ASSERT(coeffs);
     for (int i = 0; i <= f->degree; i++)
         coeffs[i] = f->coeffs[i];
     // memcpy(coeffs, f->coeffs, (f->degree + 1) * sizeof(int));
@@ -765,7 +765,7 @@ int *inv_fft(int *eval, int d)
     if (d == 1)
     {
         int *f = (int *)malloc(sizeof(int));
-        assert(f);
+        ASSERT(f);
         f[0] = eval[0];
         return f;
     }
@@ -779,7 +779,7 @@ int *inv_fft(int *eval, int d)
     for (int i = 1; i <= d / 2; i++)
         r1[d / 2 - i] = zp_opp(zp_mul(r1[d / 2 - i], omegas[i * (n / d)]));
     int *f = (int *)malloc(d * sizeof(int));
-    assert(f);
+    ASSERT(f);
     for (int i = 0; i < d / 2; i++)
     {
         f[i] = zp_mul(zp_add(r0[i], r1[i]), (p + 1) / 2);
@@ -804,7 +804,7 @@ void poly_inv_fft(poly *f, int *eval)
     else
     {
         coeffs = (int *)malloc((degree + 1) * sizeof(int));
-        assert(coeffs);
+        ASSERT(coeffs);
         for (int i = 0; i <= degree; i++)
             coeffs[i] = f_coeffs[i];
     }
@@ -817,7 +817,7 @@ int *formal_serie_mul(int *P, int *Q, int d)
     int *eval_P = fft(P, d);
     int *eval_Q = fft(Q, d);
     int *eval_res = (int *)malloc(d * sizeof(int));
-    assert(eval_res);
+    ASSERT(eval_res);
     for (int i = 0; i < d; i++)
         eval_res[i] = zp_mul(eval_P[i], eval_Q[i]);
     int *res = inv_fft(eval_res, d);
@@ -829,29 +829,29 @@ int *formal_serie_mul(int *P, int *Q, int d)
 
 int *formal_serie_inv(int *P, int d)
 {
-    if (d == 2)
+    if (d == 1)
     {
         int *Q = (int *)malloc(sizeof(int));
-        assert(Q);
+        ASSERT(Q);
         Q[0] = zp_inv(P[0]);
         return Q;
     }
     int *Q_0 = formal_serie_inv(P, d / 2);
-    int *Q_0d = (int *)calloc(d, sizeof(int));
-    assert(Q_0d);
-    for (int i = 0; i < d / 4; i++)
-        Q_0d[i] = Q_0[i];
-    int *Q_a = formal_serie_mul(Q_0d, Q_0d, d);
-    int *P_0 = (int *)calloc(d, sizeof(int));
-    assert(P_0);
+    int *Q_0d = (int *)calloc(2 * d, sizeof(int));
+    ASSERT(Q_0d);
     for (int i = 0; i < d / 2; i++)
+        Q_0d[i] = Q_0[i];
+    int *Q_a = formal_serie_mul(Q_0d, Q_0d, 2 * d);
+    int *P_0 = (int *)calloc(2 * d, sizeof(int));
+    ASSERT(P_0);
+    for (int i = 0; i < d; i++)
         P_0[i] = P[i];
-    int *Q_a2 = formal_serie_mul(P_0, Q_a, d);
-    int *Q = (int *)malloc(d * sizeof(int));
-    assert(Q);
-    for (int i = 0; i < d / 4; i++)
+    int *Q_a2 = formal_serie_mul(P_0, Q_a, 2 * d);
+    int *Q = (int *)calloc(2 * d, sizeof(int));
+    ASSERT(Q);
+    for (int i = 0; i < d / 2; i++)
         Q[i] = Q_0[i];
-    for (int i = d / 4; i < d / 2; i++)
+    for (int i = d / 2; i < d; i++)
         Q[i] = zp_opp(Q_a2[i]);
     free(Q_0);
     free(Q_0d);
@@ -865,7 +865,7 @@ void poly_rev(poly *rop, poly *op)
 {
     int degree_rop = op->degree;
     int *coeffs_rop = (int *)malloc(degree_rop * sizeof(int));
-    assert(coeffs_rop);
+    ASSERT(coeffs_rop);
     for (int i = 0; i < degree_rop; i++)
         coeffs_rop[i] = op->coeffs[degree_rop - 1];
     poly_set(rop, degree_rop, coeffs_rop);
@@ -878,7 +878,7 @@ void poly_fast_mul(poly *rop, poly *op1, poly *op2)
     int *eval_op2 = NULL;
     poly_fft(op2, &eval_op2);
     int *eval_rop = (int *)malloc(n * sizeof(int));
-    assert(eval_rop);
+    ASSERT(eval_rop);
     for (int i = 0; i < n; i++)
         eval_rop[i] = zp_mul(eval_op1[i], eval_op2[i]);
     poly_inv_fft(rop, eval_rop);
@@ -887,17 +887,72 @@ void poly_fast_mul(poly *rop, poly *op1, poly *op2)
     free(eval_rop);
 }
 
-/*
-void poly_fast_euc_div(poly *q, poly *r, poly *op1, poly *op2, int d, int omega)
+void poly_fast_euc_div(poly *quo, poly *rem, poly *op1, poly *op2)
 {
-    int n = op1->degree;
-    int m = op2->degree;
-    poly *op1_rev = poly_new();
-    poly *op2_rev = poly_new();
-    int *op2_rev_tr = (int *)calloc(,sizeof(int));
-    for (int i = 0; i < n - m + 1; i++)
-        op2_rev_tr[i] = op2_rev->coeffs[i];
+	int deg_p = op1->degree;
+	int deg_d = op2->degree;
+	int *quo_coeffs = NULL;
+	int *res_coeffs	= NULL;
+	formal_serie_fast_euc_div(&quo_coeffs, &res_coeffs, op1->coeffs, deg_p, op2->coeffs, deg_d);
+	poly_set(quo, deg_p - deg_d, quo_coeffs);
+	int degree_r = deg_d - 1;
+	while (degree_r >= 0 && res_coeffs[degree_r] == 0)
+		degree_r--;
+	if (degree_r == -1)
+		poly_set(rem, -1, NULL);
+	else
+	{
+		int *r_coeffs = (int *)malloc((degree_r + 1) * sizeof(int));
+		ASSERT(r_coeffs);
+		for (int i = 0; i <= degree_r; i++)
+			r_coeffs[i] = res_coeffs[i];
+		poly_set(rem, degree_r, r_coeffs);
+	}
+	free(res_coeffs);
+}
 
-    poly_free_full(op1_rev);
-    poly_free_full(op2_rev);
-}*/
+void formal_serie_fast_euc_div(int **quo, int **rem, int *op_p, int deg_p, int *op_d, int deg_d)
+{
+	// dm is the smallest power of 2 greater or equal to deg_d
+	int dm = 1;
+	while (dm < deg_d)
+		dm <<= 1;
+	int dnmm = 1;
+	// dnmm is the smallest power of 2 greater or equal to op_p - deg_d + 1
+	while (dnmm < deg_p - deg_d + 1)
+		dnmm <<= 1;
+	int *op_pp = (int *)calloc(2 * dnmm, sizeof(int));
+	ASSERT(op_pp);
+	int *op_dp = (int *)calloc(dnmm, sizeof(int));
+	ASSERT(op_dp);
+	for (int i = 0; i < deg_p - deg_d + 1; i++)
+		op_pp[i] = op_p[deg_p - i];
+	for (int i = 0; (i < (deg_p - deg_d + 1)) && (i < (deg_d + 1)); i++)
+		op_dp[i] = op_d[deg_d - i];
+	int *op_dpp = formal_serie_inv(op_dp, dnmm);
+	int *qp = formal_serie_mul(op_pp, op_dpp, dnmm);
+	*quo = (int *)malloc(deg_p - deg_d + 1 * sizeof(int));
+	ASSERT(*quo);
+	for (int i = 0; i < deg_p - deg_d + 1; i++)
+		(*quo)[i] = qp[deg_p - deg_d - i];
+	int *qdm = (int *)calloc(2 * dm, sizeof(int));
+	ASSERT(qdm);
+	for (int i = 0; i < deg_p - deg_d + 1 && i < deg_d; i++)
+		qdm[i] = (*quo)[i];
+	int *op_ddm = (int *)calloc(2 * dm, sizeof(int));
+	ASSERT(op_ddm);
+	for (int i = 0; i < deg_d; i++)
+		op_ddm[i] = op_d[i];
+	int *qd = formal_serie_mul(qdm, op_ddm, dm);
+	*rem = (int *)malloc(deg_d * sizeof(int));
+	ASSERT(*rem);
+	for (int i = 0; i < deg_d; i++)
+		(*rem)[i] = zp_sub(op_p[i], qd[i]);
+	free(op_pp);
+	free(op_dp);
+	free(op_dpp);
+	free(qp);
+	free(qdm);
+	free(op_ddm);
+	free(qd);
+}
