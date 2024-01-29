@@ -1,132 +1,132 @@
 #ifndef POLYNOMIAL_H
 #define POLYNOMIAL_H
 
+#include <stdbool.h>
+
+#include "array.h"
+
 // Basic implementation of Fp[x].
 
-typedef struct polynomial poly;
+typedef struct polynomial *poly;
 
 /******************************************************/
 
-void poly_set(poly *f, int degree, int *coefficients);
+/* Access functions */
 
-int poly_degree(poly *f);
+// Return deg(f).
+int poly_deg(const poly f);
 
-int *poly_coeffs(poly *f);
+// Return the array of coefficients of f.
+array poly_coeffs(const poly f);
+
+// Set the polynomial f with the given values.
+// coeffs should be manually allocated (with
+// array_new for instance).
+void poly_set(poly f, int deg, array coeffs);
 
 /******************************************************/
 
 /* Printing functions */
 
-int size_int_str(int n);
-
-void str_add_int(char *string, int *index, int n);
-
-char *str_poly_iso_length(poly *q);
-
-void poly_print(poly *q);
+// Print f in stdout.
+void poly_print(const poly f);
 
 /******************************************************/
 
 /* Initialization functions */
 
-// Returns a zero polynomial.
-// The zero polynomial is represented with degree = -1
-// and a coeffs = NULL.
-poly *poly_new(void);
+// Return a zero polynomial, i.e with degree -1 and
+// NULL coefficient.
+poly poly_new(void);
 
-// Returns a polynomial of degree deg,
-// the coefficients are given in arguments.
-// For instance for "x^2 + x + 1" the call would
-// be poly_new_from_coeffs(2, 1, 1, 1).
-poly *poly_new_from_coeffs(int deg, ...);
+// Return a polynomial with degree deg, the coefficients
+// are given in arg. For instance poly_new_set(2, 1, 1, 1)
+// returns "x^2 + x + 1"
+poly poly_new_set(int deg, ...);
 
-// Returns the polynomial equal to 1.
-poly *poly_new_1(void);
-
-int next_coeff(char *str, int *i);
-
-int *coeffs_from_str(char *str, int *deg);
-
-// Returns a polynomial from a string given
-// in argument. For instance: "1 + x + x^2".
-poly *poly_new_from_str(char *str);
-
-// Returns a polynomial equal to a polynomial
-// given in argument.
-poly *poly_new_from_copy(poly *source);
-
-// Returns a random polynomial.
-poly *poly_new_rand(int deg);
+// Return a polynomial from a string in arg.
+poly poly_new_str(char *str);
 
 /******************************************************/
 
 /* Cleaning functions */
 
-// Resets the polynomial f.
-void poly_clear(poly *f);
+// Reset the polynomial f to zero.
+void poly_clear(poly f);
 
-// Conveniance function to resets the coeffs too.
-void poly_clear_full(poly *f);
+// Liberate the memory occupied by f.
+void poly_free(poly f);
 
-// Free a polynomial.
-void poly_free(poly *f);
+/******************************************************/
 
-// Conveniance function to free the coeffs too.
-void poly_free_full(poly *f);
+/* Utility functions */
+
+// Return true if polynomials are the same, else false.
+bool poly_equal(const poly f, const poly g);
+
+// Return a copy of the source polynomial.
+poly poly_copy(const poly src);
+
+// Return a random polynomial with degree deg.
+poly poly_rand(int deg);
+
+// Return the reverse of a given polynomial.
+// For instance with "x^3 + 4x^2 + 7" will
+// return "7x^3 + 4x + 1".
+void poly_rev(poly rop, const poly f);
+
+// Compute the derivate polynomial of op and store it in rop.
+void poly_deriv(poly rop, const poly op);
 
 /******************************************************/
 
 /* Basic operations */
 
-// Adds op1 and op2 and stores the sum in rop.
-void poly_add(poly *rop, poly *op1, poly *op2);
+// Compute op1 + op2 and store it in rop.
+void poly_add(poly rop, const poly op1, const poly op2);
 
-// Substracts op1 and op2 and stores the difference in rop.
-void poly_sub(poly *rop, poly *op1, poly *op2);
+// Compute op1 - op2 and store it in rop.
+void poly_sub(poly rop, const poly op1, const poly op2);
 
-// Multiplies op1 and op2 and stores the product in rop.
-void poly_mul(poly *rop, poly *op1, poly *op2);
+// Compute op1 * op2 and store it in rop.
+void poly_mul(poly rop, const poly op1, const poly op2);
 
-// Multiplies op1 and op2 and stores the product in rop.
-void poly_mul_scalar(poly *rop, int op1, poly *op2);
+// Compute op1 * op2 and store it in rop.
+void poly_mul_scalar(poly rop, int op1, const poly op2);
 
-// Computes the euclidian division of op1 by op2, i.e,
-// op1 = q*op2 + r where deg(r) < deg(op2).
-void poly_euc_div(poly *q, poly *r, poly *op1, poly *op2);
+// Compute the quotient and remainder of the euclidian
+// division of op1 and op2 and store them in q and r.
+// op1 = q * op1 + r, deg(r) < deg(op1)
+void poly_euc_div(poly q, poly r, const poly op1, const poly op2);
 
-// Extended Euclidean algorithm.
-// d = u*op1 + v*op2.
-// d, u, v shouldn't be initialized.
-// d is a monic polynomial.
-void poly_xgcd(poly **d, poly **u, poly **v, poly *op1, poly *op2);
+// Compute the extended euclidian algorithm with op1 and op2.
+// u*op1 + v*op2 = d
+void poly_xgcd(poly *d, poly *u, poly *v, const poly op1, const poly op2);
 
-// Extended Euclidean algorithm but stops when remainder has a degree smaller
-// than n.
-// d = u*op1 + v*op2.
-// d, u, v shouldn't be initialized.
-void poly_xgcd_partial(poly **d, poly **u, poly **v, poly *op1, poly *op2, int n);
+// Same as above but stop when deg(d) < limit.
+void poly_xgcd_partial(poly *d, poly *u, poly *v, const poly op1, const poly op2, int limit);
 
 /******************************************************/
 
-/* DFT functions */
+/*DFT functions */
 
-// Derives op and stores the derivative in rop.
-void poly_deriv(poly *rop, poly *op);
+// Compute f(a).
+int poly_eval(const poly f, int a);
 
-// Returns y = f(x).
-int poly_eval(poly *f, int x);
+// Compute f(a) for each a in tab.
+array poly_eval_array(const poly f, const array tab, int tab_size);
 
-// Evaluates the polynomial f for n value in the
-// tab a and stores the result in tab b.
-void poly_eval_multi(poly *f, int n, int *a, int *b);
+// Same as above but with powers of a privitime root of unity.
+// f should have a degree < d.
+array poly_dft(const poly f);
 
-// dft for polynomials
-void poly_dft(poly *f, int **eval);
+// Find the polynomial f such that f(a_i) = b_i for a in points
+// and b in eval using lagrange polynomials.
+void interpolation(poly rop, const array points, const array eval, int size);
 
-// Computes a polynomial using n points (a, b) such
-// that f(a) = b. We use Lagrange polynomials to
-// compute the inverse of the Vandermonde matrix.
-poly *interpolation(int *a, int *b, int n);
+// Same as above but the evalutation points are the powers of a
+// primitive root of unity.
+void poly_inv_dft(poly rop, array eval);
 
 /******************************************************/
 
@@ -134,53 +134,23 @@ poly *interpolation(int *a, int *b, int n);
 
 // Works if p = q*d + 1 where d is a power of 2
 
-// "Splits" the array tab of size tab_size into two arrays
-// containing elements of even indexes and even indexes.
-void array_split_all(int **even, int *even_size, int **odd, int *odd_size, int *tab, int tab_size);
+// Fast fourrier transform for polynomials. Same as poly_dft but
+// faster.
+array poly_fft(const poly f);
 
-// splits array with even length
-void array_split(int **even, int **odd, int *tab, int tab_size);
+// Inverse of fft. Same as interpolation but faster.
+void poly_inv_fft(poly rop, array eval);
 
-// inverse of split array
-void array_merge(int **tab, int *even, int *odd, int subtab_size);
+/******************************************************/
 
-// "Splits" the polynomial f in two polynomial even and odd
-// such that f(x) = even(x^2) + x*odd(x^2).
-// f should have a degree of d-1 at most.
-void poly_split(poly *even, poly *odd, poly *f);
+/* Fast operations */
 
-// fast fourier transform for d a power of twoo
-// omega should be a d^th primitive root of unity
-int *fft(int *f, int d);
+// Works if p = q*d + 1 where d is a power of 2
 
-// fft for polynomials
-void poly_fft(poly *f, int **eval);
+// Same as poly_mul but faster.
+void poly_fast_mul(poly rop, const poly op1, const poly op2);
 
-// inverse fft in int* format
-int *inv_fft(int *eval, int d);
+// Same as poly_euc_div but faster.
+void poly_fast_euc_div(poly q, poly r, const poly op1, const poly op2);
 
-// inverse fft in poly format
-void poly_inv_fft(poly *f, int *eval);
-
-int *formal_serie_mul(int *P, int *Q, int d);
-
-// Compute the d first coefficients of the inverse serie of P
-// P should be at least of size d.
-// d should be a power of 2 and 2*d should divide p-1.
-int *formal_serie_inv(int *P, int d);
-
-void poly_rev(poly *rop, poly *op);
-
-// Polynomial multiplication using fft.
-void poly_fast_mul(poly *rop, poly *op1, poly *op2);
-
-void poly_fast_euc_div(poly *quo, poly *rem, poly *op1, poly *op2);
-
-// deg_p is the degree of op_p, op_p should be at least of size deg_p + 1.
-// deg_d is the degree of op_d, op_d should be at least of size deg_d + 1.
-// It compute the quotient and rest in the euclidian division of op_p by op_d.
-// It store them in quo and rem
-// quo will be of degree deg_p - deg_d and of size deg_p - deg_d + 1.
-// rem will be of degree at most deg_d - 1 and is always of size deg_d, padding with 0.
-void formal_serie_fast_euc_div(int **quo, int **rem, int *op_p, int deg_p, int *op_d, int deg_d);
 #endif

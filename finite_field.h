@@ -3,36 +3,36 @@
 
 // Basic operations in Z/pZ.
 
-// Returns the representant of n in Z/pZ.
-int zp_mod(int n);
+// Compute a mod p.
+int zp_mod(int a);
 
-// Returns the sum of two elements of Z/pZ.
-int zp_add(int n, int m);
+// Compute a + b mod p.
+int zp_add(int a, int b);
 
-// Returns the difference of two elements of Z/pZ.
-int zp_sub(int n, int m);
+// Compute a - b mod p.
+int zp_sub(int a, int b);
 
-// Returns the opposite of an element of Z/pZ.
-int zp_opp(int n);
+// Compute -a mod p.
+int zp_opp(int a);
 
-// Returns the product of two elements of Z/pZ.
-int zp_mul(int n, int m);
+// Compute a*b mod p.
+int zp_mul(int a, int b);
 
-// Return the inverse of n in Z/pZ.
-int zp_inv(int n);
+// Compute a^(-1) mod p.
+int zp_inv(int a);
 
-// Returns a random element in Z/pZ.
+// Return a random element of Z/pZ.
 int zp_rand();
 
-// Returns base^exp mod p using modular exponentiation.
+// Compute base^exp mod p using modular exponentiation.
 int zp_exp(int base, int exp);
 
-// Returns a d^th primitive root of unity in Z/pZ.
+// Return a d^th primitive root of unity in Z/pZ.
 // We should have p = dq + 1 where d is a power of 2,
 // and q is odd.
 int zp_prim_root();
 
-// Returns the minimal d^th primitive root of unity in Z/pZ.
+// Return the smallest d^th primitive root of unity in Z/pZ.
 // We should have p = dq + 1 where d is a power of 2,
 // and q is odd.
 int zp_prim_root_min();

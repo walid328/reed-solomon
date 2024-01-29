@@ -2,32 +2,32 @@
 #include <stdio.h>
 
 #include "finite_field.h"
-#include "field_spec.h"
+#include "field_settings.h"
 
-int zp_mod(int n)
+int zp_mod(int a)
 {
-    int m = n % p;
-    return m >= 0 ? m : m + p;
+    int b = a % p;
+    return b >= 0 ? b : b + p;
 }
 
-int zp_add(int n, int m)
+int zp_add(int a, int b)
 {
-    return zp_mod(n + m);
+    return zp_mod(a + b);
 }
 
-int zp_sub(int n, int m)
+int zp_sub(int a, int b)
 {
-    return zp_mod(n - m);
+    return zp_mod(a - b);
 }
 
-int zp_opp(int n)
+int zp_opp(int a)
 {
-    return zp_mod(-n);
+    return zp_mod(-a);
 }
 
-int zp_mul(int n, int m)
+int zp_mul(int a, int b)
 {
-    return zp_mod(n * m);
+    return zp_mod(a * b);
 }
 
 int zp_rand(void)
@@ -35,9 +35,9 @@ int zp_rand(void)
     return zp_mod((rand() << 24) ^ (rand() << 16) ^ (rand() << 8) ^ rand());
 }
 
-int zp_inv(int n)
+int zp_inv(int a)
 {
-    if (n == 0)
+    if (a == 0)
     {
         fprintf(stderr, "0 is not inversible!\n");
         exit(EXIT_FAILURE);
@@ -45,7 +45,7 @@ int zp_inv(int n)
     int v0 = 0;
     int r0 = p;
     int v1 = 1;
-    int r1 = n;
+    int r1 = a;
     while (r1 != 1)
     {
         int q = r0 / r1;
