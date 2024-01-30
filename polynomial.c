@@ -271,20 +271,20 @@ bool poly_equal(const poly f, const poly g)
     return true;
 }
 
-poly poly_copy(const poly src)
+void poly_copy(poly dst, const poly src)
 {
-    poly copy = poly_new();
     int deg = src->deg;
+    array coeffs = NULL;
     if (deg > -1)
     {
-        array coeffs = array_new(deg + 1);
+        coeffs = array_new(deg + 1);
         memcpy(coeffs, src->coeffs, (deg + 1) * sizeof(int));
-        poly_set(copy, deg, coeffs);
     }
-    return copy;
+    poly_clear(dst);
+    poly_set(dst, deg, coeffs);
 }
 
-poly poly_rand(int deg)
+poly poly_new_rand(int deg)
 {
     poly f = poly_new();
     array coeffs = array_new(deg + 1);
@@ -502,12 +502,16 @@ void poly_euc_div(poly q, poly r, const poly op1, const poly op2)
 
 void poly_xgcd(poly *d, poly *u, poly *v, const poly op1, const poly op2)
 {
-    *d = poly_copy(op1);
-    *u = poly_new_str("1");
-    *v = poly_new();
-    poly r1 = poly_copy(op2);
+    poly_clear(*d);
+    poly_clear(*u);
+    poly_clear(*v);
+    poly_copy(*d, op1);
+    array coeff_u = array_new_set(1, 1);
+    poly_set(*u, 0, coeff_u);
+    poly r1 = poly_new();
+    poly_copy(r1, op2);
     poly u1 = poly_new();
-    poly v1 = poly_new_str("1");
+    poly v1 = poly_new_set(0, 1);
     while (r1->deg > -1)
     {
         poly q = poly_new();
@@ -542,10 +546,14 @@ void poly_xgcd(poly *d, poly *u, poly *v, const poly op1, const poly op2)
 
 void poly_xgcd_partial(poly *d, poly *u, poly *v, const poly op1, const poly op2, int limit)
 {
-    *d = poly_copy(op1);
-    *u = poly_new_set(0, 1);
-    *v = poly_new();
-    poly r1 = poly_copy(op2);
+    poly_clear(*d);
+    poly_clear(*u);
+    poly_clear(*v);
+    poly_copy(*d, op1);
+    array coeff_u = array_new_set(1, 1);
+    poly_set(*u, 0, coeff_u);
+    poly r1 = poly_new();
+    poly_copy(r1, op2);
     poly u1 = poly_new();
     poly v1 = poly_new_set(0, 1);
     while (limit <= (*d)->deg)

@@ -31,8 +31,9 @@ bool test_new_free(void)
 
 bool test_copy(void)
 {
-    poly f = poly_rand(10);
-    poly g = poly_copy(f);
+    poly f = poly_new_rand(10);
+    poly g = poly_new();
+    poly_copy(g, f);
     assert(poly_equal(f, g));
     poly_free(f);
     poly_free(g);
@@ -111,8 +112,8 @@ bool test_mul_scalar(void)
 
 bool test_euc_div(void)
 {
-    poly f = poly_rand(6);
-    poly g = poly_rand(3);
+    poly f = poly_new_rand(6);
+    poly g = poly_new_rand(3);
     poly q = poly_new();
     poly r = poly_new();
     poly_euc_div(q, r, f, g);
@@ -131,9 +132,11 @@ bool test_euc_div(void)
 
 bool test_xgcd(void)
 {
-    poly f = poly_rand(6);
-    poly g = poly_rand(3);
-    poly d, u, v;
+    poly f = poly_new_rand(6);
+    poly g = poly_new_rand(3);
+    poly d = poly_new();
+    poly u = poly_new();
+    poly v = poly_new();
     poly_xgcd(&d, &u, &v, f, g);
     poly uf = poly_new();
     poly_mul(uf, u, f);
@@ -155,7 +158,7 @@ bool test_xgcd(void)
 
 bool test_interpol(void)
 {
-    poly f = poly_rand(4);
+    poly f = poly_new_rand(4);
     array points = array_new_set(5, 0, 1, 2, 3, 4);
     array eval = poly_eval_array(f, points, 5);
     poly test_inter = poly_new();
@@ -170,7 +173,7 @@ bool test_interpol(void)
 
 bool test_dft(void)
 {
-    poly f = poly_rand(6);
+    poly f = poly_new_rand(6);
     array eval = poly_dft(f);
     poly test_dft = poly_new();
     poly_inv_dft(test_dft, eval);
@@ -183,7 +186,7 @@ bool test_dft(void)
 
 bool test_fft(void)
 {
-    poly f = poly_rand(6);
+    poly f = poly_new_rand(6);
     array eval = poly_fft(f);
     poly test_fft = poly_new();
     poly_inv_fft(test_fft, eval);
@@ -211,8 +214,8 @@ bool test_fast_mul(void)
 
 bool test_fast_euc_div(void)
 {
-    poly f = poly_rand(6);
-    poly g = poly_rand(3);
+    poly f = poly_new_rand(6);
+    poly g = poly_new_rand(3);
     poly q = poly_new();
     poly r = poly_new();
     poly_fast_euc_div(q, r, f, g);

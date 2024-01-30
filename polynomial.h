@@ -47,6 +47,9 @@ poly poly_new_set(int deg, ...);
 // Return a polynomial from a string in arg.
 poly poly_new_str(char *str);
 
+// Return a random polynomial with degree deg.
+poly poly_new_rand(int deg);
+
 /******************************************************/
 
 /* Cleaning functions */
@@ -64,13 +67,10 @@ void poly_free(poly f);
 // Return true if polynomials are the same, else false.
 bool poly_equal(const poly f, const poly g);
 
-// Return a copy of the source polynomial.
-poly poly_copy(const poly src);
+// Put a copy of the source polynomial in destination.
+void poly_copy(poly dst, const poly src);
 
-// Return a random polynomial with degree deg.
-poly poly_rand(int deg);
-
-// Return the reverse of a given polynomial.
+// Put the reverse of a given polynomial in rop.
 // For instance with "x^3 + 4x^2 + 7" will
 // return "7x^3 + 4x + 1".
 void poly_rev(poly rop, const poly f);

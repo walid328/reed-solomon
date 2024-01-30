@@ -28,7 +28,9 @@ array rs_decode(int n, int k, array points, array received)
     }
     poly g_1 = poly_new();
     interpolation(g_1, points, received, n);
-    poly g, u, v;
+    poly g = poly_new();
+    poly u = poly_new();
+    poly v = poly_new();
     poly_xgcd_partial(&g, &u, &v, g_0, g_1, (n + k) / 2);
     poly f_1 = poly_new();
     poly r = poly_new();
