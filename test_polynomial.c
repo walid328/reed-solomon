@@ -137,7 +137,7 @@ bool test_xgcd(void)
     poly d = poly_new();
     poly u = poly_new();
     poly v = poly_new();
-    poly_xgcd(&d, &u, &v, f, g);
+    poly_xgcd(d, u, v, f, g);
     poly uf = poly_new();
     poly_mul(uf, u, f);
     poly vg = poly_new();
@@ -308,13 +308,13 @@ int main(int argc, char *argv[])
     // print test result
     if (ok)
     {
-        fprintf(stderr, "Test \"%s\" finished: SUCCESS\n", argv[1]);
+        fprintf(stderr, "Test \"%s\" finished: \033[0;32m SUCCESS \033[0;37m\n", argv[1]);
         field_settings_free();
         return EXIT_SUCCESS;
     }
     else
     {
-        fprintf(stderr, "Test \"%s\" finished: FAILURE\n", argv[1]);
+        fprintf(stderr, "Test \"%s\" finished: \033[0;31m FAILURE \033[0;37m\n", argv[1]);
         field_settings_free();
         return EXIT_FAILURE;
     }

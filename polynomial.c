@@ -135,6 +135,14 @@ poly poly_new(void)
     return f;
 }
 
+poly poly_new_deg(int deg)
+{
+    poly f = poly_new();
+    array coeffs = array_new(deg + 1);
+    poly_set(f, deg, coeffs);
+    return f;
+}
+
 poly poly_new_set(int deg, ...)
 {
     poly f = poly_new();
@@ -149,14 +157,6 @@ poly poly_new_set(int deg, ...)
         poly_set(f, deg, coeffs);
     }
     return f;
-}
-
-poly poly_new_deg(int deg)
-{
-	poly f = poly_new();
-	array coeffs = array_new(deg + 1);
-	poly_set(f, deg, coeffs);
-	return f;
 }
 
 int next_coeff(char *str, array i)
@@ -263,14 +263,14 @@ void poly_clear(poly f)
 
 void poly_clear_multi(int qty, ...)
 {
-	va_list valist;
-	va_start(valist, qty);
-	for (int i = 0; i < qty; i++)
-	{
-		poly f = va_arg(valist, poly);
-		poly_clear(f);
-	}
-	va_end(valist);
+    va_list valist;
+    va_start(valist, qty);
+    for (int i = 0; i < qty; i++)
+    {
+        poly f = va_arg(valist, poly);
+        poly_clear(f);
+    }
+    va_end(valist);
 }
 
 void poly_free(poly f)
@@ -281,14 +281,14 @@ void poly_free(poly f)
 
 void poly_free_multi(int qty, ...)
 {
-	va_list valist;
-	va_start(valist, qty);
-	for (int i = 0; i < qty; i++)
-	{
-		poly f = va_arg(valist, poly);
-		poly_free(f);
-	}
-	va_end(valist);
+    va_list valist;
+    va_start(valist, qty);
+    for (int i = 0; i < qty; i++)
+    {
+        poly f = va_arg(valist, poly);
+        poly_free(f);
+    }
+    va_end(valist);
 }
 
 /******************************************************/
@@ -532,14 +532,13 @@ void poly_euc_div(poly q, poly r, const poly op1, const poly op2)
     poly_set(r, deg_r, coeffs_r);
 }
 
-void poly_xgcd(poly *d, poly *u, poly *v, const poly op1, const poly op2)
+void poly_xgcd(poly d, poly u, poly v, const poly op1, const poly op2)
 {
-    poly_clear(*d);
-    poly_clear(*u);
-    poly_clear(*v);
-    poly_copy(*d, op1);
+    poly_copy(d, op1);
+    poly_clear(u);
+    poly_clear(v);
     array coeff_u = array_new_set(1, 1);
-    poly_set(*u, 0, coeff_u);
+    poly_set(u, 0, coeff_u);
     poly r1 = poly_new();
     poly_copy(r1, op2);
     poly u1 = poly_new();
@@ -548,67 +547,61 @@ void poly_xgcd(poly *d, poly *u, poly *v, const poly op1, const poly op2)
     {
         poly q = poly_new();
         poly r2 = poly_new();
-        poly_euc_div(q, r2, *d, r1);
+        poly_euc_div(q, r2, d, r1);
         poly u2 = poly_new();
         poly_mul(u2, q, u1);
-        poly_sub(u2, *u, u2);
+        poly_sub(u2, u, u2);
         poly v2 = poly_new();
         poly_mul(v2, q, v1);
-        poly_sub(v2, *v, v2);
+        poly_sub(v2, v, v2);
         poly_free(q);
-        poly_free(*d);
-        poly_free(*u);
-        poly_free(*v);
-        *d = r1;
-        *u = u1;
-        *v = v1;
-        r1 = r2;
-        u1 = u2;
-        v1 = v2;
+        poly_copy(d, r1);
+        poly_copy(u, u1);
+        poly_copy(v, v1);
+        poly_copy(r1, r2);
+        poly_copy(u1, u2);
+        poly_copy(v1, v2);
+        poly_free(r2);
+        poly_free(u2);
+        poly_free(v2);
     }
-    // We want d to be monic.
-    int inv_LC_d = zp_inv((*d)->coeffs[(*d)->deg]);
-    poly_mul_scalar(*d, inv_LC_d, *d);
-    poly_mul_scalar(*u, inv_LC_d, *u);
-    poly_mul_scalar(*v, inv_LC_d, *v);
     poly_free(r1);
     poly_free(u1);
     poly_free(v1);
 }
 
-void poly_xgcd_partial(poly *d, poly *u, poly *v, const poly op1, const poly op2, int limit)
+void poly_xgcd_partial(poly d, poly u, poly v, const poly op1, const poly op2, int limit)
 {
-    poly_clear(*d);
-    poly_clear(*u);
-    poly_clear(*v);
-    poly_copy(*d, op1);
+    poly_copy(d, op1);
+    poly_clear(u);
+    poly_clear(v);
     array coeff_u = array_new_set(1, 1);
-    poly_set(*u, 0, coeff_u);
+    poly_set(u, 0, coeff_u);
     poly r1 = poly_new();
     poly_copy(r1, op2);
     poly u1 = poly_new();
     poly v1 = poly_new_set(0, 1);
-    while (limit <= (*d)->deg)
+    while (limit <= d->deg)
     {
         poly q = poly_new();
         poly r2 = poly_new();
-        poly_euc_div(q, r2, *d, r1);
+        poly_euc_div(q, r2, d, r1);
         poly u2 = poly_new();
         poly_mul(u2, q, u1);
-        poly_sub(u2, *u, u2);
+        poly_sub(u2, u, u2);
         poly v2 = poly_new();
         poly_mul(v2, q, v1);
-        poly_sub(v2, *v, v2);
+        poly_sub(v2, v, v2);
         poly_free(q);
-        poly_free(*d);
-        poly_free(*u);
-        poly_free(*v);
-        *d = r1;
-        *u = u1;
-        *v = v1;
-        r1 = r2;
-        u1 = u2;
-        v1 = v2;
+        poly_copy(d, r1);
+        poly_copy(u, u1);
+        poly_copy(v, v1);
+        poly_copy(r1, r2);
+        poly_copy(u1, u2);
+        poly_copy(v1, v2);
+        poly_free(r2);
+        poly_free(u2);
+        poly_free(v2);
     }
     // We want d to be monic.
     poly_free(r1);
@@ -757,214 +750,214 @@ void poly_fast_euc_div(poly quo, poly rem, const poly op1, const poly op2)
 
 poly *poly_half_gcd(const poly r0, const poly r1)
 {
-	// r0 = R0, r1 = R1
-	// 1.
-	int m = (r0->deg + 1) / 2;
-	// 2.
-	if (r1->deg < m)
-	{
-		poly *mdpgcd = (poly *)malloc(4 * sizeof(poly));
-		assert(mdpgcd);
-		mdpgcd[0] = poly_new_set(0, 1);
-		mdpgcd[1] = poly_new_set(-1);
-		mdpgcd[2] = poly_new_set(-1);
-		mdpgcd[3] = poly_new_set(0, 1);
-		// 3.
-		return mdpgcd;
-	}
-	// 4.
-	// r0s = R0*
-	poly r0s = poly_new_deg(r0->deg - m);
-	for (int i = m; i <= r0->deg; i++)
-		r0s->coeffs[i - m] = r0->coeffs[i];
-	// r1s = R1*
-	poly r1s = poly_new_deg(r1->deg - m);
-	for (int i = m; i <= r1->deg; i++)
-		r1s->coeffs[i - m] = r1->coeffs[i];
-	// 5.
-	// d0s = D0*
-	poly *d0s = poly_half_gcd(r0s, r1s);
-	// 6.
-	poly prod1 = poly_new();
-	poly prod2 = poly_new();
-	poly_fast_mul(prod1, d0s[0], r0);
-	poly_fast_mul(prod2, d0s[1], r1);
-	// rj = Rj
-	poly rj = poly_new();
-	poly_add(rj, prod1, prod2);
-	poly_fast_mul(prod1, d0s[2], r0);
-	poly_fast_mul(prod2, d0s[3], r1);
-	// rjp1 = R(j+1)
-	poly rjp1 = poly_new();
-	poly_add(rjp1, prod1, prod2);
-	// 7.
-	if (rjp1->deg < m)
-	{
-		poly_free_multi(6, r0s, r1s, prod1, prod2, rj, rjp1);
-		// 8.
-		return d0s;
-	}
-	// 9.
-	// qj = Qj
-	poly qj = poly_new();
-	// rjp2 = R(j+2)
-	poly rjp2 = poly_new();
-	poly_fast_euc_div(qj, rjp2, rj, rjp1);
-	// Tj = [[0, 1], [1, -qj]]
-	poly w2 = poly_new();
-	poly_fast_mul(prod1, qj, d0s[2]);
-	poly_sub(w2, d0s[0], prod1);
-	poly w3 = poly_new();
-	poly_fast_mul(prod1, qj, d0s[3]);
-	poly_sub(w3, d0s[1], prod1);
-	// Tj * D0* = [[d0s[2], d0s[3]], [w2, w3]]
-	poly *mdpgcd = (poly *)malloc(4 * sizeof(poly));
-	assert(mdpgcd);
-	// 10.
-	if (rjp2->deg < m)
-	{
-		mdpgcd[0] = d0s[2];
-		mdpgcd[1] = d0s[3];
-		mdpgcd[2] = w2;
-		mdpgcd[3] = w3;
-		poly_free_multi(10, r0s, r1s, prod1, prod2, rj, rjp1, qj, rjp2, d0s[0], d0s[1]);
-		free(d0s);
-		// 11.
-		return mdpgcd;
-	}
-	// 12.
-	int l = 2 * m - rjp1->deg;
-	// 13.
-	// rjp1s = R(j+1)*
-	poly rjp1s = poly_new_deg(rjp1->deg - l);
-	for (int i = l; i <= rjp1->deg; i++)
-		rjp1s[i - l] = rjp1[i];
-	// rjp2s = R(j+2)*
-	poly rjp2s;
-	if (rjp2->deg < l)
-		rjp2s = poly_new();
-	else
-	{
-		rjp2s = poly_new_deg(rjp2->deg - l);
-		for (int i = l; i <= rjp2->deg; i++)
-			rjp2s->coeffs[i - l] = rjp2->coeffs[i];
-	}
-	// 14.
-	// d1s = D1*
-	poly *d1s = poly_half_gcd(rjp1s, rjp2s);
-	// 15.
-	for (int i = 0; i < 4; i++)
-		mdpgcd[i] = poly_new();
-	poly_fast_mul(prod1, d1s[0], d0s[2]);
-	poly_fast_mul(prod2, d1s[1], w2);
-	poly_add(mdpgcd[0], prod1, prod2);
-	poly_fast_mul(prod1, d1s[0], d0s[3]);
-	poly_fast_mul(prod2, d1s[1], w3);
-	poly_add(mdpgcd[1], prod1, prod2);
-	poly_fast_mul(prod1, d1s[2], d0s[2]);
-	poly_fast_mul(prod2, d1s[3], w2);
-	poly_add(mdpgcd[2], prod1, prod2);
-	poly_fast_mul(prod1, d1s[2], d0s[3]);
-	poly_fast_mul(prod2, d1s[3], w3);
-	poly_add(mdpgcd[3], prod1, prod2);
-	for (int i = 0; i < 4; i++)
-		poly_free_multi(2, d0s[i], d1s[i]);
-	free(d0s);
-	free(d1s);
-	poly_free_multi(12, r0s, r1s, prod1, prod2, rj, rjp1, qj, rjp2, w2, w3, rjp1s, rjp2s);
-	return mdpgcd;
+    // r0 = R0, r1 = R1
+    // 1.
+    int m = (r0->deg + 1) / 2;
+    // 2.
+    if (r1->deg < m)
+    {
+        poly *mdpgcd = (poly *)malloc(4 * sizeof(poly));
+        assert(mdpgcd);
+        mdpgcd[0] = poly_new_set(0, 1);
+        mdpgcd[1] = poly_new_set(-1);
+        mdpgcd[2] = poly_new_set(-1);
+        mdpgcd[3] = poly_new_set(0, 1);
+        // 3.
+        return mdpgcd;
+    }
+    // 4.
+    // r0s = R0*
+    poly r0s = poly_new_deg(r0->deg - m);
+    for (int i = m; i <= r0->deg; i++)
+        r0s->coeffs[i - m] = r0->coeffs[i];
+    // r1s = R1*
+    poly r1s = poly_new_deg(r1->deg - m);
+    for (int i = m; i <= r1->deg; i++)
+        r1s->coeffs[i - m] = r1->coeffs[i];
+    // 5.
+    // d0s = D0*
+    poly *d0s = poly_half_gcd(r0s, r1s);
+    // 6.
+    poly prod1 = poly_new();
+    poly prod2 = poly_new();
+    poly_fast_mul(prod1, d0s[0], r0);
+    poly_fast_mul(prod2, d0s[1], r1);
+    // rj = Rj
+    poly rj = poly_new();
+    poly_add(rj, prod1, prod2);
+    poly_fast_mul(prod1, d0s[2], r0);
+    poly_fast_mul(prod2, d0s[3], r1);
+    // rjp1 = R(j+1)
+    poly rjp1 = poly_new();
+    poly_add(rjp1, prod1, prod2);
+    // 7.
+    if (rjp1->deg < m)
+    {
+        poly_free_multi(6, r0s, r1s, prod1, prod2, rj, rjp1);
+        // 8.
+        return d0s;
+    }
+    // 9.
+    // qj = Qj
+    poly qj = poly_new();
+    // rjp2 = R(j+2)
+    poly rjp2 = poly_new();
+    poly_fast_euc_div(qj, rjp2, rj, rjp1);
+    // Tj = [[0, 1], [1, -qj]]
+    poly w2 = poly_new();
+    poly_fast_mul(prod1, qj, d0s[2]);
+    poly_sub(w2, d0s[0], prod1);
+    poly w3 = poly_new();
+    poly_fast_mul(prod1, qj, d0s[3]);
+    poly_sub(w3, d0s[1], prod1);
+    // Tj * D0* = [[d0s[2], d0s[3]], [w2, w3]]
+    poly *mdpgcd = (poly *)malloc(4 * sizeof(poly));
+    assert(mdpgcd);
+    // 10.
+    if (rjp2->deg < m)
+    {
+        mdpgcd[0] = d0s[2];
+        mdpgcd[1] = d0s[3];
+        mdpgcd[2] = w2;
+        mdpgcd[3] = w3;
+        poly_free_multi(10, r0s, r1s, prod1, prod2, rj, rjp1, qj, rjp2, d0s[0], d0s[1]);
+        free(d0s);
+        // 11.
+        return mdpgcd;
+    }
+    // 12.
+    int l = 2 * m - rjp1->deg;
+    // 13.
+    // rjp1s = R(j+1)*
+    poly rjp1s = poly_new_deg(rjp1->deg - l);
+    for (int i = l; i <= rjp1->deg; i++)
+        rjp1s[i - l] = rjp1[i];
+    // rjp2s = R(j+2)*
+    poly rjp2s;
+    if (rjp2->deg < l)
+        rjp2s = poly_new();
+    else
+    {
+        rjp2s = poly_new_deg(rjp2->deg - l);
+        for (int i = l; i <= rjp2->deg; i++)
+            rjp2s->coeffs[i - l] = rjp2->coeffs[i];
+    }
+    // 14.
+    // d1s = D1*
+    poly *d1s = poly_half_gcd(rjp1s, rjp2s);
+    // 15.
+    for (int i = 0; i < 4; i++)
+        mdpgcd[i] = poly_new();
+    poly_fast_mul(prod1, d1s[0], d0s[2]);
+    poly_fast_mul(prod2, d1s[1], w2);
+    poly_add(mdpgcd[0], prod1, prod2);
+    poly_fast_mul(prod1, d1s[0], d0s[3]);
+    poly_fast_mul(prod2, d1s[1], w3);
+    poly_add(mdpgcd[1], prod1, prod2);
+    poly_fast_mul(prod1, d1s[2], d0s[2]);
+    poly_fast_mul(prod2, d1s[3], w2);
+    poly_add(mdpgcd[2], prod1, prod2);
+    poly_fast_mul(prod1, d1s[2], d0s[3]);
+    poly_fast_mul(prod2, d1s[3], w3);
+    poly_add(mdpgcd[3], prod1, prod2);
+    for (int i = 0; i < 4; i++)
+        poly_free_multi(2, d0s[i], d1s[i]);
+    free(d0s);
+    free(d1s);
+    poly_free_multi(12, r0s, r1s, prod1, prod2, rj, rjp1, qj, rjp2, w2, w3, rjp1s, rjp2s);
+    return mdpgcd;
 }
 
 poly *poly_fast_gcd_matrix(const poly r0, const poly r1)
 {
-	// r0 = R0, r1 = R1
-	// 1.
-	// mdpgcd = D
-	poly *mdpgcd = poly_half_gcd(r0, r1);
-	// 2.
-	poly prod1 = poly_new();
-	poly prod2 = poly_new();
-	poly_fast_mul(prod1, mdpgcd[0], r0);
-	poly_fast_mul(prod2, mdpgcd[1], r1);
-	// rj = Rj
-	poly rj = poly_new();
-	poly_add(rj, prod1, prod2);
-	poly_fast_mul(prod1, mdpgcd[2], r0);
-	poly_fast_mul(prod2, mdpgcd[3], r1);
-	// rjp1 = R(j+1)
-	poly rjp1 = poly_new();
-	poly_add(rjp1, prod1, prod2);
-	// 3.
-	if (rjp1->deg == -1)
-	{
-		poly_free_multi(4, prod1, prod2, rj, rjp1);
-		return mdpgcd;
-	}
-	// 4.
-	// qj = Qj
-	poly qj = poly_new();
-	// rjp2 = R(j+2)
-	poly rjp2 = poly_new();
-	poly_fast_euc_div(qj, rjp2, rj, rjp1);
-	// 5.
-	// Tj = [[0, 1], [1, -qj]]
-	// 6.
-	poly w2 = poly_new();
-	poly_fast_mul(prod1, qj, mdpgcd[2]);
-	poly_sub(w2, mdpgcd[0], prod1);
-	poly w3 = poly_new();
-	poly_fast_mul(prod1, qj, mdpgcd[3]);
-	poly_sub(w3, mdpgcd[1], prod1);
-	// Tj * D = [[mdpgcd[2], mdpgcd[3]], [w2, w3]]
-	// mgcd = matrix of gcd of R0 and R1
-	poly *mgcd = (poly *)malloc(4 * sizeof(poly));
-	assert(mgcd);
-	if (rjp2->deg == -1)
-	{
-		mgcd[0] = mdpgcd[2];
-		mgcd[1] = mdpgcd[3];
-		mgcd[2] = w2;
-		mgcd[3] = w3;
-		poly_free_multi(8, mdpgcd[0], mdpgcd[1], prod1, prod2, rj, rjp1, rjp2, qj);
-		free(mdpgcd);
-		return mgcd;
-	}
-	// 7.
-	// mrjp12 = N
-	poly *mrjp12 = poly_fast_gcd_matrix(rjp1, rjp2);
-	// 8.
-	for (int i = 0; i < 4; i++)
-		mgcd[i] = poly_new();
-	poly_fast_mul(prod1, mrjp12[0], mdpgcd[2]);
-	poly_fast_mul(prod2, mrjp12[1], w2);
-	poly_add(mgcd[0], prod1, prod2);
-	poly_fast_mul(prod1, mrjp12[0], mdpgcd[3]);
-	poly_fast_mul(prod2, mrjp12[1], w3);
-	poly_add(mgcd[1], prod1, prod2);
-	poly_fast_mul(prod1, mrjp12[2], mdpgcd[2]);
-	poly_fast_mul(prod2, mrjp12[3], w2);
-	poly_add(mgcd[2], prod1, prod2);
-	poly_fast_mul(prod1, mrjp12[2], mdpgcd[3]);
-	poly_fast_mul(prod2, mrjp12[3], w3);
-	poly_add(mgcd[3], prod1, prod2);
-	for (int i = 0; i < 4; i++)
-		poly_free_multi(2, mdpgcd[i], mrjp12[i]);
-	free(mdpgcd);
-	free(mrjp12);
-	poly_free_multi(8, prod1, prod2, rj, rjp1, rjp2, qj, w2, w3);
-	return mgcd;
+    // r0 = R0, r1 = R1
+    // 1.
+    // mdpgcd = D
+    poly *mdpgcd = poly_half_gcd(r0, r1);
+    // 2.
+    poly prod1 = poly_new();
+    poly prod2 = poly_new();
+    poly_fast_mul(prod1, mdpgcd[0], r0);
+    poly_fast_mul(prod2, mdpgcd[1], r1);
+    // rj = Rj
+    poly rj = poly_new();
+    poly_add(rj, prod1, prod2);
+    poly_fast_mul(prod1, mdpgcd[2], r0);
+    poly_fast_mul(prod2, mdpgcd[3], r1);
+    // rjp1 = R(j+1)
+    poly rjp1 = poly_new();
+    poly_add(rjp1, prod1, prod2);
+    // 3.
+    if (rjp1->deg == -1)
+    {
+        poly_free_multi(4, prod1, prod2, rj, rjp1);
+        return mdpgcd;
+    }
+    // 4.
+    // qj = Qj
+    poly qj = poly_new();
+    // rjp2 = R(j+2)
+    poly rjp2 = poly_new();
+    poly_fast_euc_div(qj, rjp2, rj, rjp1);
+    // 5.
+    // Tj = [[0, 1], [1, -qj]]
+    // 6.
+    poly w2 = poly_new();
+    poly_fast_mul(prod1, qj, mdpgcd[2]);
+    poly_sub(w2, mdpgcd[0], prod1);
+    poly w3 = poly_new();
+    poly_fast_mul(prod1, qj, mdpgcd[3]);
+    poly_sub(w3, mdpgcd[1], prod1);
+    // Tj * D = [[mdpgcd[2], mdpgcd[3]], [w2, w3]]
+    // mgcd = matrix of gcd of R0 and R1
+    poly *mgcd = (poly *)malloc(4 * sizeof(poly));
+    assert(mgcd);
+    if (rjp2->deg == -1)
+    {
+        mgcd[0] = mdpgcd[2];
+        mgcd[1] = mdpgcd[3];
+        mgcd[2] = w2;
+        mgcd[3] = w3;
+        poly_free_multi(8, mdpgcd[0], mdpgcd[1], prod1, prod2, rj, rjp1, rjp2, qj);
+        free(mdpgcd);
+        return mgcd;
+    }
+    // 7.
+    // mrjp12 = N
+    poly *mrjp12 = poly_fast_gcd_matrix(rjp1, rjp2);
+    // 8.
+    for (int i = 0; i < 4; i++)
+        mgcd[i] = poly_new();
+    poly_fast_mul(prod1, mrjp12[0], mdpgcd[2]);
+    poly_fast_mul(prod2, mrjp12[1], w2);
+    poly_add(mgcd[0], prod1, prod2);
+    poly_fast_mul(prod1, mrjp12[0], mdpgcd[3]);
+    poly_fast_mul(prod2, mrjp12[1], w3);
+    poly_add(mgcd[1], prod1, prod2);
+    poly_fast_mul(prod1, mrjp12[2], mdpgcd[2]);
+    poly_fast_mul(prod2, mrjp12[3], w2);
+    poly_add(mgcd[2], prod1, prod2);
+    poly_fast_mul(prod1, mrjp12[2], mdpgcd[3]);
+    poly_fast_mul(prod2, mrjp12[3], w3);
+    poly_add(mgcd[3], prod1, prod2);
+    for (int i = 0; i < 4; i++)
+        poly_free_multi(2, mdpgcd[i], mrjp12[i]);
+    free(mdpgcd);
+    free(mrjp12);
+    poly_free_multi(8, prod1, prod2, rj, rjp1, rjp2, qj, w2, w3);
+    return mgcd;
 }
 
 void poly_fast_xgcd(poly d, poly u, poly v, const poly op_a, const poly op_b)
 {
-	poly *mab = poly_fast_gcd_matrix(op_a, op_b);
-	poly prod1 = poly_new();
-	poly prod2 = poly_new();
-	poly_fast_mul(prod1, mab[0], op_a);
-	poly_fast_mul(prod2, mab[1], op_b);
-	poly_add(d, prod1, prod2);
-	poly_copy(u, mab[0]);
-	poly_copy(v, mab[1]);
-	poly_free_multi(6, mab[0], mab[1], mab[2], mab[3], prod1, prod2);
-	free(mab);
+    poly *mab = poly_fast_gcd_matrix(op_a, op_b);
+    poly prod1 = poly_new();
+    poly prod2 = poly_new();
+    poly_fast_mul(prod1, mab[0], op_a);
+    poly_fast_mul(prod2, mab[1], op_b);
+    poly_add(d, prod1, prod2);
+    poly_copy(u, mab[0]);
+    poly_copy(v, mab[1]);
+    poly_free_multi(6, mab[0], mab[1], mab[2], mab[3], prod1, prod2);
+    free(mab);
 }

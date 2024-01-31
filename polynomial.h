@@ -39,15 +39,15 @@ void poly_print(const poly f);
 // NULL coefficient.
 poly poly_new(void);
 
-// Return a polynomial with degree deg, the coefficients
-// are given in arg. For instance poly_new_set(2, 1, 1, 1)
-// returns "x^2 + x + 1"
-poly poly_new_set(int deg, ...);
-
 // Return a polynomial of degree deg.
 // Allocate the memory for the polynomial and for his coefficients
 // Doesn't set the coefficients.
 poly poly_new_deg(int deg);
+
+// Return a polynomial with degree deg, the coefficients
+// are given in arg. For instance poly_new_set(2, 3, 2, 1)
+// returns "x^2 + 2x + 3"
+poly poly_new_set(int deg, ...);
 
 // Return a polynomial from a string in arg.
 poly poly_new_str(char *str);
@@ -113,10 +113,10 @@ void poly_euc_div(poly q, poly r, const poly op1, const poly op2);
 
 // Compute the extended euclidian algorithm with op1 and op2.
 // u*op1 + v*op2 = d
-void poly_xgcd(poly *d, poly *u, poly *v, const poly op1, const poly op2);
+void poly_xgcd(poly d, poly u, poly v, const poly op1, const poly op2);
 
 // Same as above but stop when deg(d) < limit.
-void poly_xgcd_partial(poly *d, poly *u, poly *v, const poly op1, const poly op2, int limit);
+void poly_xgcd_partial(poly d, poly u, poly v, const poly op1, const poly op2, int limit);
 
 /******************************************************/
 

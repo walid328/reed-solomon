@@ -31,7 +31,7 @@ array rs_decode(int n, int k, array points, array received)
     poly g = poly_new();
     poly u = poly_new();
     poly v = poly_new();
-    poly_xgcd_partial(&g, &u, &v, g_0, g_1, (n + k) / 2);
+    poly_xgcd_partial(g, u, v, g_0, g_1, (n + k) / 2);
     poly f_1 = poly_new();
     poly r = poly_new();
     poly_euc_div(f_1, r, g, v);
