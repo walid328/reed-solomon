@@ -32,5 +32,6 @@ test:
 	./build/test_polynomial "fft"
 	./build/test_polynomial "fast_mul"
 	./build/test_polynomial "fast_euc_div"
+	./build/test_polynomial "fast_xgcd"
 	./build/test_rs_code "encode"
 	./build/test_rs_code "decode"

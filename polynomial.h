@@ -44,6 +44,11 @@ poly poly_new(void);
 // returns "x^2 + x + 1"
 poly poly_new_set(int deg, ...);
 
+// Return a polynomial of degree deg.
+// Allocate the memory for the polynomial and for his coefficients
+// Doesn't set the coefficients.
+poly poly_new_deg(int deg);
+
 // Return a polynomial from a string in arg.
 poly poly_new_str(char *str);
 
@@ -57,8 +62,15 @@ poly poly_new_rand(int deg);
 // Reset the polynomial f to zero.
 void poly_clear(poly f);
 
+// Reset the qty polynomials passed as arguments.
+void poly_clear_multi(int qty, ...);
+
 // Liberate the memory occupied by f.
 void poly_free(poly f);
+
+// Liberate the memory occupied by the qty polynomials
+// passed as arguments.
+void poly_free_multi(int qty, ...);
 
 /******************************************************/
 
@@ -96,7 +108,7 @@ void poly_mul_scalar(poly rop, int op1, const poly op2);
 
 // Compute the quotient and remainder of the euclidian
 // division of op1 and op2 and store them in q and r.
-// op1 = q * op1 + r, deg(r) < deg(op1)
+// op1 = q * op2 + r, deg(r) < deg(op1)
 void poly_euc_div(poly q, poly r, const poly op1, const poly op2);
 
 // Compute the extended euclidian algorithm with op1 and op2.
@@ -152,5 +164,11 @@ void poly_fast_mul(poly rop, const poly op1, const poly op2);
 
 // Same as poly_euc_div but faster.
 void poly_fast_euc_div(poly q, poly r, const poly op1, const poly op2);
+
+poly *poly_half_gcd(const poly r0, const poly r1);
+
+poly *poly_fast_gcd_matrix(const poly r0, const poly r1);
+
+void poly_fast_xgcd(poly d, poly u, poly v, const poly op_a, const poly op_b);
 
 #endif

@@ -232,6 +232,32 @@ bool test_fast_euc_div(void)
     return true;
 }
 
+bool test_fast_xgcd(void)
+{
+    poly f = poly_new_rand(6);
+    poly g = poly_new_rand(3);
+    poly d = poly_new();
+    poly u = poly_new();
+    poly v = poly_new();
+    poly_fast_xgcd(d, u, v, f, g);
+    poly uf = poly_new();
+    poly_mul(uf, u, f);
+    poly vg = poly_new();
+    poly_mul(vg, v, g);
+    poly test_xgcd = poly_new();
+    poly_add(test_xgcd, uf, vg);
+    assert(poly_equal(d, test_xgcd));
+    poly_free(f);
+    poly_free(g);
+    poly_free(d);
+    poly_free(u);
+    poly_free(v);
+    poly_free(uf);
+    poly_free(vg);
+    poly_free(test_xgcd);
+    return true;
+}
+
 int main(int argc, char *argv[])
 {
     field_settings_update();
@@ -270,6 +296,8 @@ int main(int argc, char *argv[])
         ok = test_fast_mul();
     else if (strcmp("fast_euc_div", argv[1]) == 0)
         ok = test_fast_euc_div();
+    else if (strcmp("fast_xgcd", argv[1]) == 0)
+        ok = test_fast_xgcd();
 
     else
     {
