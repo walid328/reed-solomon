@@ -31,28 +31,22 @@ array rs_decode(int n, int k, array points, array received)
     poly g = poly_new();
     poly u = poly_new();
     poly v = poly_new();
-    poly_xgcd_partial(g, u, v, g_0, g_1, (n + k) / 2);
+    poly_xgcd_partial(g, u, v, g_0, g_1, (n + k + 1) / 2);
     poly f_1 = poly_new();
     poly r = poly_new();
     poly_euc_div(f_1, r, g, v);
-    poly_free(g_0);
-    poly_free(g_1);
-    poly_free(g);
-    poly_free(u);
-    poly_free(v);
+    poly_free_multi(5, g_0, g_1, g, u, v);
     if (poly_deg(r) == -1 && poly_deg(f_1) < k)
     {
         array message = array_new(k);
         for (int i = 0; i < k; i++)
             message[i] = poly_coeffs(f_1)[i];
-        poly_free(r);
-        poly_free(f_1);
+        poly_free_multi(2, r, f_1);
         return message;
     }
     else
     {
-        poly_free(r);
-        poly_free(f_1);
+        poly_free_multi(2, r, f_1);
         fprintf(stderr, "rs_decode failure: too many errors!\n");
         exit(EXIT_FAILURE);
     }

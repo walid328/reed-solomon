@@ -82,6 +82,9 @@ bool poly_equal(const poly f, const poly g);
 // Put a copy of the source polynomial in destination.
 void poly_copy(poly dst, const poly src);
 
+// Create a copy of the source polynomial.
+poly poly_new_copy(const poly src);
+
 // Put the reverse of a given polynomial in rop.
 // For instance with "x^3 + 4x^2 + 7" will
 // return "7x^3 + 4x + 1".
@@ -128,8 +131,8 @@ int poly_eval(const poly f, int a);
 // Compute f(a) for each a in tab.
 array poly_eval_array(const poly f, const array tab, int tab_size);
 
-// Same as above but with powers of a privitime root of unity.
-// f should have a degree < d.
+// Same as above but with powers of a privitime n-th root of unity.
+// f should have a degree < n.
 array poly_dft(const poly f);
 
 // Find the polynomial f such that f(a_i) = b_i for a in points
@@ -137,7 +140,7 @@ array poly_dft(const poly f);
 void interpolation(poly rop, const array points, const array eval, int size);
 
 // Same as above but the evalutation points are the powers of a
-// primitive root of unity.
+// primitive n-th root of unity.
 void poly_inv_dft(poly rop, array eval);
 
 /******************************************************/
@@ -146,12 +149,13 @@ void poly_inv_dft(poly rop, array eval);
 
 // Works if p = q*d + 1 where d is a power of 2
 
-// Fast fourrier transform for polynomials. Same as poly_dft but
-// faster.
-array poly_fft(const poly f);
+// Fast fourrier transform for polynomials. Same as poly_dft but in O(n log(n)).
+// the evaluation points are powers of a primitive d-th root of unity.
+// d is a power of 2 dividing p-1.
+array poly_fft(const poly f, int d);
 
 // Inverse of fft. Same as interpolation but faster.
-void poly_inv_fft(poly rop, array eval);
+void poly_inv_fft(poly rop, array eval, int d);
 
 /******************************************************/
 

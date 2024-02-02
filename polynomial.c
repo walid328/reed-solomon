@@ -316,6 +316,14 @@ void poly_copy(poly dst, const poly src)
     poly_set(dst, deg, coeffs);
 }
 
+poly poly_new_copy(const poly src)
+{
+	poly f = poly_new_deg(src->deg);
+	if (f->deg > -1)
+		memcpy(f->coeffs, src->coeffs, (f->deg + 1) * sizeof(int));
+	return f;
+}
+
 poly poly_new_rand(int deg)
 {
     poly f = poly_new();
@@ -497,12 +505,18 @@ void poly_mul_scalar(poly rop, int op1, const poly op2)
         for (int i = 0; i <= deg; i++)
             coeffs[i] = zp_mul(op2->coeffs[i], op1);
     }
-    poly_clear(op2);
+    poly_clear(rop);
     poly_set(rop, deg, coeffs);
 }
 
 void poly_euc_div(poly q, poly r, const poly op1, const poly op2)
 {
+	if (op1->deg < op2->deg)
+	{
+		poly_clear(q);
+		poly_copy(r, op1);
+		return;
+	}
     int deg_q, *coeffs_q;
     int deg_r, *coeffs_r;
     array rest = array_new(op1->deg + 1);
@@ -528,85 +542,77 @@ void poly_euc_div(poly q, poly r, const poly op1, const poly op2)
     for (int i = 0; i <= deg_r; i++)
         coeffs_r[i] = rest[i];
     array_free(rest);
+	poly_clear(q);
+	poly_clear(r);
     poly_set(q, deg_q, coeffs_q);
     poly_set(r, deg_r, coeffs_r);
 }
 
 void poly_xgcd(poly d, poly u, poly v, const poly op1, const poly op2)
 {
-    poly_copy(d, op1);
-    poly_clear(u);
-    poly_clear(v);
-    array coeff_u = array_new_set(1, 1);
-    poly_set(u, 0, coeff_u);
-    poly r1 = poly_new();
-    poly_copy(r1, op2);
+	poly r0 = poly_new_copy(op1);
+	poly u0 = poly_new_set(0, 1);
+	poly v0 = poly_new();
+    poly r1 = poly_new_copy(op2);
     poly u1 = poly_new();
     poly v1 = poly_new_set(0, 1);
     while (r1->deg > -1)
     {
-        poly q = poly_new();
-        poly r2 = poly_new();
-        poly_euc_div(q, r2, d, r1);
-        poly u2 = poly_new();
-        poly_mul(u2, q, u1);
-        poly_sub(u2, u, u2);
-        poly v2 = poly_new();
-        poly_mul(v2, q, v1);
-        poly_sub(v2, v, v2);
-        poly_free(q);
-        poly_copy(d, r1);
-        poly_copy(u, u1);
-        poly_copy(v, v1);
-        poly_copy(r1, r2);
-        poly_copy(u1, u2);
-        poly_copy(v1, v2);
-        poly_free(r2);
-        poly_free(u2);
-        poly_free(v2);
+		poly q = poly_new();
+		poly r2 = poly_new();
+		poly u2 = poly_new();
+		poly v2 = poly_new();
+		poly_euc_div(q, r2, r0, r1);
+		poly_mul(u2, q, u1);
+		poly_sub(u2, u0, u2);
+		poly_mul(v2, q, v1);
+		poly_sub(v2, v0, v2);
+		poly_free_multi(3, r0, u0, v0);
+		r0 = r1;
+		u0 = u1;
+		v0 = v1;
+		r1 = r2;
+		u1 = u2;
+		v1 = v2;
     }
-    poly_free(r1);
-    poly_free(u1);
-    poly_free(v1);
+	poly_copy(d, r0);
+	poly_copy(u, u0);
+	poly_copy(v, v0);
+	poly_free_multi(6, r0, u0, v0, r1, u1, v1);
 }
 
 void poly_xgcd_partial(poly d, poly u, poly v, const poly op1, const poly op2, int limit)
 {
-    poly_copy(d, op1);
-    poly_clear(u);
-    poly_clear(v);
-    array coeff_u = array_new_set(1, 1);
-    poly_set(u, 0, coeff_u);
-    poly r1 = poly_new();
-    poly_copy(r1, op2);
+	poly r0 = poly_new_copy(op1);
+	poly u0 = poly_new_set(0, 1);
+	poly v0 = poly_new();
+    poly r1 = poly_new_copy(op2);
     poly u1 = poly_new();
     poly v1 = poly_new_set(0, 1);
-    while (limit <= d->deg)
+    while (r1->deg >= limit)
     {
-        poly q = poly_new();
-        poly r2 = poly_new();
-        poly_euc_div(q, r2, d, r1);
-        poly u2 = poly_new();
-        poly_mul(u2, q, u1);
-        poly_sub(u2, u, u2);
-        poly v2 = poly_new();
-        poly_mul(v2, q, v1);
-        poly_sub(v2, v, v2);
-        poly_free(q);
-        poly_copy(d, r1);
-        poly_copy(u, u1);
-        poly_copy(v, v1);
-        poly_copy(r1, r2);
-        poly_copy(u1, u2);
-        poly_copy(v1, v2);
-        poly_free(r2);
-        poly_free(u2);
-        poly_free(v2);
+		poly q = poly_new();
+		poly r2 = poly_new();
+		poly u2 = poly_new();
+		poly v2 = poly_new();
+		poly_euc_div(q, r2, r0, r1);
+		poly_mul(u2, q, u1);
+		poly_sub(u2, u0, u2);
+		poly_mul(v2, q, v1);
+		poly_sub(v2, v0, v2);
+		poly_free_multi(3, r0, u0, v0);
+		r0 = r1;
+		u0 = u1;
+		v0 = v1;
+		r1 = r2;
+		u1 = u2;
+		v1 = v2;
     }
     // We want d to be monic.
-    poly_free(r1);
-    poly_free(u1);
-    poly_free(v1);
+	poly_copy(d, r1);
+	poly_copy(u, u1);
+	poly_copy(v, v1);
+	poly_free_multi(6, r0, u0, v0, r1, u1, v1);
 }
 
 /******************************************************/
@@ -663,12 +669,9 @@ void interpolation(poly rop, const array points, const array eval, int size)
         poly_euc_div(l_i, r, f, x_m_ai);
         poly_mul_scalar(l_i, eval[i], l_i);
         poly_add(rop, rop, l_i);
-        poly_free(x_m_ai);
-        poly_free(l_i);
-        poly_free(r);
+        poly_free_multi(3, x_m_ai, l_i, r);
     }
-    poly_free(f);
-    poly_free(fd);
+    poly_free_multi(2, f, fd);
 }
 
 void poly_inv_dft(poly rop, array eval)
@@ -678,22 +681,22 @@ void poly_inv_dft(poly rop, array eval)
 
 /******************************************************/
 
-array poly_fft(const poly f)
+array poly_fft(const poly f, int d)
 {
     // We need some padding.
-    array coeffs = array_new_zeros(n);
+    array coeffs = array_new_zeros(d);
     for (int i = 0; i <= f->deg; i++)
         coeffs[i] = f->coeffs[i];
-    array eval = array_fft(coeffs, n);
+    array eval = array_fft(coeffs, d);
     array_free(coeffs);
     return eval;
 }
 
-void poly_inv_fft(poly rop, array eval)
+void poly_inv_fft(poly rop, array eval, int d)
 {
     poly_clear(rop);
-    array f_coeffs = array_inv_fft(eval, n);
-    int deg = n - 1;
+    array f_coeffs = array_inv_fft(eval, d);
+    int deg = d - 1;
     while (deg >= 0 && f_coeffs[deg] == 0)
         deg--;
     array coeffs;
@@ -714,12 +717,15 @@ void poly_inv_fft(poly rop, array eval)
 void poly_fast_mul(poly rop, const poly op1, const poly op2)
 {
     poly_clear(rop);
-    array eval_op1 = poly_fft(op1);
-    array eval_op2 = poly_fft(op2);
-    array eval_rop = array_new(n);
-    for (int i = 0; i < n; i++)
+	int d = 1;
+	while (d < op1->deg + op2->deg + 1)
+		d *= 2;
+    array eval_op1 = poly_fft(op1, d);
+    array eval_op2 = poly_fft(op2, d);
+    array eval_rop = array_new(d);
+    for (int i = 0; i < d; i++)
         eval_rop[i] = zp_mul(eval_op1[i], eval_op2[i]);
-    poly_inv_fft(rop, eval_rop);
+    poly_inv_fft(rop, eval_rop, d);
     array_free(eval_op1);
     array_free(eval_op2);
     array_free(eval_rop);

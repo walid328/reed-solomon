@@ -35,8 +35,7 @@ bool test_copy(void)
     poly g = poly_new();
     poly_copy(g, f);
     assert(poly_equal(f, g));
-    poly_free(f);
-    poly_free(g);
+    poly_free_multi(2, f, g);
     return true;
 }
 
@@ -47,9 +46,7 @@ bool test_rev(void)
     poly test_rev = poly_new();
     poly_rev(test_rev, f);
     assert(poly_equal(rev, test_rev));
-    poly_free(f);
-    poly_free(rev);
-    poly_free(test_rev);
+    poly_free_multi(3, f, rev, test_rev);
     return true;
 }
 
@@ -60,9 +57,7 @@ bool test_deriv(void)
     poly test_deriv = poly_new();
     poly_deriv(test_deriv, f);
     assert(poly_equal(deriv, test_deriv));
-    poly_free(f);
-    poly_free(deriv);
-    poly_free(test_deriv);
+    poly_free_multi(3, f, deriv, test_deriv);
     return true;
 }
 
@@ -74,10 +69,7 @@ bool test_add(void)
     poly test_sum = poly_new();
     poly_add(test_sum, f, g);
     assert(poly_equal(test_sum, sum));
-    poly_free(f);
-    poly_free(g);
-    poly_free(sum);
-    poly_free(test_sum);
+    poly_free_multi(4, f, g, sum, test_sum);
     return true;
 }
 
@@ -89,10 +81,7 @@ bool test_mul(void)
     poly test_prod = poly_new();
     poly_mul(test_prod, f, g);
     assert(poly_equal(test_prod, prod));
-    poly_free(f);
-    poly_free(g);
-    poly_free(prod);
-    poly_free(test_prod);
+    poly_free_multi(4, f, g, prod, test_prod);
     return true;
 }
 
@@ -104,9 +93,7 @@ bool test_mul_scalar(void)
     poly test_prod = poly_new();
     poly_mul_scalar(test_prod, a, f);
     assert(poly_equal(test_prod, prod));
-    poly_free(f);
-    poly_free(prod);
-    poly_free(test_prod);
+    poly_free_multi(3, f, prod, test_prod);
     return true;
 }
 
@@ -122,11 +109,7 @@ bool test_euc_div(void)
     poly_mul(test_euc, g, q);
     poly_add(test_euc, test_euc, r);
     assert(poly_equal(test_euc, f));
-    poly_free(f);
-    poly_free(g);
-    poly_free(q);
-    poly_free(r);
-    poly_free(test_euc);
+    poly_free_multi(5, f, g, q, r, test_euc);
     return true;
 }
 
@@ -145,14 +128,7 @@ bool test_xgcd(void)
     poly test_xgcd = poly_new();
     poly_add(test_xgcd, uf, vg);
     assert(poly_equal(d, test_xgcd));
-    poly_free(f);
-    poly_free(g);
-    poly_free(d);
-    poly_free(u);
-    poly_free(v);
-    poly_free(uf);
-    poly_free(vg);
-    poly_free(test_xgcd);
+    poly_free_multi(8, f, g, d, u, v, uf, vg, test_xgcd);
     return true;
 }
 
@@ -164,8 +140,7 @@ bool test_interpol(void)
     poly test_inter = poly_new();
     interpolation(test_inter, points, eval, 5);
     assert(poly_equal(test_inter, f));
-    poly_free(f);
-    poly_free(test_inter);
+    poly_free_multi(2, f, test_inter);
     array_free(points);
     array_free(eval);
     return true;
@@ -178,8 +153,7 @@ bool test_dft(void)
     poly test_dft = poly_new();
     poly_inv_dft(test_dft, eval);
     assert(poly_equal(test_dft, f));
-    poly_free(f);
-    poly_free(test_dft);
+    poly_free_multi(2, f, test_dft);
     array_free(eval);
     return true;
 }
@@ -187,12 +161,11 @@ bool test_dft(void)
 bool test_fft(void)
 {
     poly f = poly_new_rand(6);
-    array eval = poly_fft(f);
+    array eval = poly_fft(f, 8);
     poly test_fft = poly_new();
-    poly_inv_fft(test_fft, eval);
+    poly_inv_fft(test_fft, eval, 8);
     assert(poly_equal(test_fft, f));
-    poly_free(f);
-    poly_free(test_fft);
+    poly_free_multi(2, f, test_fft);
     array_free(eval);
     return true;
 }
@@ -205,10 +178,7 @@ bool test_fast_mul(void)
     poly test_prod = poly_new();
     poly_fast_mul(test_prod, f, g);
     assert(poly_equal(test_prod, prod));
-    poly_free(f);
-    poly_free(g);
-    poly_free(prod);
-    poly_free(test_prod);
+    poly_free_multi(4, f, g, prod, test_prod);
     return true;
 }
 
@@ -224,11 +194,7 @@ bool test_fast_euc_div(void)
     poly_mul(test_euc, g, q);
     poly_add(test_euc, test_euc, r);
     assert(poly_equal(test_euc, f));
-    poly_free(f);
-    poly_free(g);
-    poly_free(q);
-    poly_free(r);
-    poly_free(test_euc);
+    poly_free_multi(5, f, g, q, r, test_euc);
     return true;
 }
 
@@ -247,14 +213,7 @@ bool test_fast_xgcd(void)
     poly test_xgcd = poly_new();
     poly_add(test_xgcd, uf, vg);
     assert(poly_equal(d, test_xgcd));
-    poly_free(f);
-    poly_free(g);
-    poly_free(d);
-    poly_free(u);
-    poly_free(v);
-    poly_free(uf);
-    poly_free(vg);
-    poly_free(test_xgcd);
+    poly_free_multi(8, f, g, d, u, v, uf, vg, test_xgcd);
     return true;
 }
 
