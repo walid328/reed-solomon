@@ -556,9 +556,9 @@ void poly_xgcd(poly d, poly u, poly v, const poly op1, const poly op2)
     poly r1 = poly_new_copy(op2);
     poly u1 = poly_new();
     poly v1 = poly_new_set(0, 1);
+	poly q = poly_new();
     while (r1->deg > -1)
     {
-		poly q = poly_new();
 		poly r2 = poly_new();
 		poly u2 = poly_new();
 		poly v2 = poly_new();
@@ -578,7 +578,7 @@ void poly_xgcd(poly d, poly u, poly v, const poly op1, const poly op2)
 	poly_copy(d, r0);
 	poly_copy(u, u0);
 	poly_copy(v, v0);
-	poly_free_multi(6, r0, u0, v0, r1, u1, v1);
+	poly_free_multi(7, r0, u0, v0, r1, u1, v1, q);
 }
 
 void poly_xgcd_partial(poly d, poly u, poly v, const poly op1, const poly op2, int limit)
@@ -589,9 +589,9 @@ void poly_xgcd_partial(poly d, poly u, poly v, const poly op1, const poly op2, i
     poly r1 = poly_new_copy(op2);
     poly u1 = poly_new();
     poly v1 = poly_new_set(0, 1);
+	poly q = poly_new();
     while (r1->deg >= limit)
     {
-		poly q = poly_new();
 		poly r2 = poly_new();
 		poly u2 = poly_new();
 		poly v2 = poly_new();
@@ -612,7 +612,7 @@ void poly_xgcd_partial(poly d, poly u, poly v, const poly op1, const poly op2, i
 	poly_copy(d, r1);
 	poly_copy(u, u1);
 	poly_copy(v, v1);
-	poly_free_multi(6, r0, u0, v0, r1, u1, v1);
+	poly_free_multi(7, r0, u0, v0, r1, u1, v1, q);
 }
 
 /******************************************************/
