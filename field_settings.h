@@ -14,7 +14,7 @@ extern int n;
 extern int omega;
 extern array omegas;
 
-void field_settings_update(void);
+void field_settings_set(int p_);
 
 void field_settings_free(void);
 

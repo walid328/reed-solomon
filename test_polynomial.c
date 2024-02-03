@@ -219,7 +219,7 @@ bool test_fast_xgcd(void)
 
 int main(int argc, char *argv[])
 {
-    field_settings_update();
+    field_settings_set(193);
 
     if (argc == 1)
         usage(argc, argv);
@@ -257,6 +257,24 @@ int main(int argc, char *argv[])
         ok = test_fast_euc_div();
     else if (strcmp("fast_xgcd", argv[1]) == 0)
         ok = test_fast_xgcd();
+	else if (strcmp("all", argv[1]) == 0 || strcmp("*", argv[1]) == 0)
+	{
+		ok = test_new_free();
+		ok &= test_add();
+		ok &= test_mul();
+		ok &= test_copy();
+		ok &= test_rev();
+		ok &= test_deriv();
+		ok &= test_mul_scalar();
+		ok &= test_euc_div();
+		ok &= test_xgcd();
+		ok &= test_interpol();
+		ok &= test_dft();
+		ok &= test_fft();
+		ok &= test_fast_mul();
+		ok &= test_fast_euc_div();
+		ok &= test_fast_xgcd();
+	}
 
     else
     {

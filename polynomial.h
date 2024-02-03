@@ -169,10 +169,20 @@ void poly_fast_mul(poly rop, const poly op1, const poly op2);
 // Same as poly_euc_div but faster.
 void poly_fast_euc_div(poly q, poly r, const poly op1, const poly op2);
 
+// return the matrix of half gcd of r0 and r1.
+// we must have deg(r0) > deg(r1).
 poly *poly_half_gcd(const poly r0, const poly r1);
 
+// return the gcd matrix M of r0 and r1.
+// we must have deg(r0) > deg(r1).
+// M is such that:
+// M[0] * r0 + M[1] * r1 = gcd(r0, r1)
+// M[2] * r0 + M[3] * r1 = 0
 poly *poly_fast_gcd_matrix(const poly r0, const poly r1);
 
-void poly_fast_xgcd(poly d, poly u, poly v, const poly op_a, const poly op_b);
+// compute d, u and v such that d = gcd(op_1, op_2)
+// and u * op_1 + v * op_2 = d
+// it does it with a better time complexity than poly_xgcd.
+void poly_fast_xgcd(poly d, poly u, poly v, const poly op_1, const poly op_2);
 
 #endif

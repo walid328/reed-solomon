@@ -4,8 +4,9 @@
 #include "field_settings.h"
 #include "finite_field.h"
 
-void field_settings_update(void)
+void field_settings_set(int p_)
 {
+	p = p_;
     q = p - 1;
     n = 1;
     while ((q & 1) == 0)
@@ -14,6 +15,7 @@ void field_settings_update(void)
         n <<= 1;
     }
     omega = zp_prim_root_min();
+    array_free(omegas);
     omegas = array_new(n);
     omegas[0] = 1;
     for (int i = 1; i < n; i++)

@@ -10,7 +10,7 @@
 #include "polynomial.h"
 #include "rs_code.h"
 
-int p = 193;
+int p = 0;
 int q = 0;
 int n = 0;
 int omega = 0;
@@ -56,7 +56,7 @@ bool test_decode(void)
 
 int main(int argc, char *argv[])
 {
-    field_settings_update();
+    field_settings_set(193);
 
     if (argc == 1)
         usage(argc, argv);

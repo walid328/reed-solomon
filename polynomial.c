@@ -694,7 +694,6 @@ array poly_fft(const poly f, int d)
 
 void poly_inv_fft(poly rop, array eval, int d)
 {
-    poly_clear(rop);
     array f_coeffs = array_inv_fft(eval, d);
     int deg = d - 1;
     while (deg >= 0 && f_coeffs[deg] == 0)
@@ -709,6 +708,7 @@ void poly_inv_fft(poly rop, array eval, int d)
             coeffs[i] = f_coeffs[i];
     }
     array_free(f_coeffs);
+    poly_clear(rop);
     poly_set(rop, deg, coeffs);
 }
 
@@ -719,12 +719,16 @@ void poly_fast_mul(poly rop, const poly op1, const poly op2)
     int d = 1;
     while (d < op1->deg + op2->deg + 1)
         d *= 2;
+	if (d > n)
+	{
+		fprintf(stderr, "there is no %d-th root of unity\n", d);
+        exit(EXIT_FAILURE);
+	}
     array eval_op1 = poly_fft(op1, d);
     array eval_op2 = poly_fft(op2, d);
     array eval_rop = array_new(d);
     for (int i = 0; i < d; i++)
         eval_rop[i] = zp_mul(eval_op1[i], eval_op2[i]);
-    poly_clear(rop);
     poly_inv_fft(rop, eval_rop, d);
     array_free(eval_op1);
     array_free(eval_op2);
@@ -954,16 +958,46 @@ poly *poly_fast_gcd_matrix(const poly r0, const poly r1)
     return mgcd;
 }
 
-void poly_fast_xgcd(poly d, poly u, poly v, const poly op_a, const poly op_b)
+void poly_fast_xgcd(poly d, poly u, poly v, const poly op_1, const poly op_2)
 {
-    poly *mab = poly_fast_gcd_matrix(op_a, op_b);
-    poly prod1 = poly_new();
-    poly prod2 = poly_new();
-    poly_fast_mul(prod1, mab[0], op_a);
-    poly_fast_mul(prod2, mab[1], op_b);
-    poly_add(d, prod1, prod2);
-    poly_copy(u, mab[0]);
-    poly_copy(v, mab[1]);
-    poly_free_multi(6, mab[0], mab[1], mab[2], mab[3], prod1, prod2);
-    free(mab);
+	if (op_1->deg == -1 && op_2->deg == -1)
+	{
+		fprintf(stderr, "there is no gcd of 0 and 0\n");
+        exit(EXIT_FAILURE);
+	}
+	if (op_1->deg == op_2->deg)
+	{
+		poly quo = poly_new();
+		poly rem = poly_new();
+		poly_fast_euc_div(quo, rem, op_2, op_1);
+		poly_fast_xgcd(d, u, v, op_1, rem);
+		poly qv = poly_new();
+		poly_fast_mul(qv, quo, v);
+		poly_sub(u, u, qv);
+		poly_free_multi(3, quo, rem, qv);
+	}
+	else
+	{
+		poly op_a, op_b;
+		if (op_1->deg > op_2->deg)
+		{
+			op_a = op_1;
+			op_b = op_2;
+		}
+		else if (op_1->deg < op_2->deg)
+		{
+			op_a = op_2;
+			op_b = op_1;
+		}
+		poly *mab = poly_fast_gcd_matrix(op_a, op_b);
+		poly prod1 = poly_new();
+		poly prod2 = poly_new();
+		poly_fast_mul(prod1, mab[0], op_a);
+		poly_fast_mul(prod2, mab[1], op_b);
+		poly_add(d, prod1, prod2);
+		poly_copy(u, mab[0]);
+		poly_copy(v, mab[1]);
+		poly_free_multi(6, mab[0], mab[1], mab[2], mab[3], prod1, prod2);
+		free(mab);
+	}
 }
