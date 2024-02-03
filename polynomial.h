@@ -85,6 +85,12 @@ void poly_copy(poly dst, const poly src);
 // Create a copy of the source polynomial.
 poly poly_new_copy(const poly src);
 
+// Clear f, set his degree and allocate his array coeffs.
+void poly_set_deg(poly f, int deg);
+
+// Clear f and set it like in poly_new_set.
+void poly_set_coeffs(poly f, int deg, ...);
+
 // Put the reverse of a given polynomial in rop.
 // For instance with "x^3 + 4x^2 + 7" will
 // return "7x^3 + 4x + 1".
@@ -184,5 +190,9 @@ poly *poly_fast_gcd_matrix(const poly r0, const poly r1);
 // and u * op_1 + v * op_2 = d
 // it does it with a better time complexity than poly_xgcd.
 void poly_fast_xgcd(poly d, poly u, poly v, const poly op_1, const poly op_2);
+
+poly *poly_fast_gcd_partial_matrix(const poly r0, const poly r1, int limit);
+
+void poly_fast_xgcd_partial(poly d, poly u, poly v, const poly op_1, const poly op_2, int limit);
 
 #endif

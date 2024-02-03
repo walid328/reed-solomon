@@ -324,6 +324,29 @@ poly poly_new_copy(const poly src)
     return f;
 }
 
+void poly_set_deg(poly f, int deg)
+{
+	poly_clear(f);
+	if (deg > -1)
+	{
+		f->deg = deg;
+		f->coeffs = array_new(deg + 1);
+	}
+}
+
+void poly_set_coeffs(poly f, int deg, ...)
+{
+	poly_set_deg(f, deg);
+	if (deg > -1)
+	{
+		va_list valist;
+		va_start(valist, deg);
+		for (int i = 0; i <= deg; i++)
+			f->coeffs[i] = va_arg(valist, int);
+		va_end(valist);
+	}
+}
+
 poly poly_new_rand(int deg)
 {
     poly f = poly_new();
@@ -769,8 +792,8 @@ poly *poly_half_gcd(const poly r0, const poly r1)
         poly *mdpgcd = (poly *)malloc(4 * sizeof(poly));
         assert(mdpgcd);
         mdpgcd[0] = poly_new_set(0, 1);
-        mdpgcd[1] = poly_new_set(-1);
-        mdpgcd[2] = poly_new_set(-1);
+        mdpgcd[1] = poly_new();
+        mdpgcd[2] = poly_new();
         mdpgcd[3] = poly_new_set(0, 1);
         // 3.
         return mdpgcd;
@@ -978,26 +1001,191 @@ void poly_fast_xgcd(poly d, poly u, poly v, const poly op_1, const poly op_2)
 	}
 	else
 	{
-		poly op_a, op_b;
 		if (op_1->deg > op_2->deg)
 		{
-			op_a = op_1;
-			op_b = op_2;
+			poly *mab = poly_fast_gcd_matrix(op_1, op_2);
+			poly prod1 = poly_new();
+			poly prod2 = poly_new();
+			poly_fast_mul(prod1, mab[0], op_1);
+			poly_fast_mul(prod2, mab[1], op_2);
+			poly_add(d, prod1, prod2);
+			poly_copy(u, mab[0]);
+			poly_copy(v, mab[1]);
+			poly_free_multi(6, mab[0], mab[1], mab[2], mab[3], prod1, prod2);
+			free(mab);
 		}
 		else if (op_1->deg < op_2->deg)
 		{
-			op_a = op_2;
-			op_b = op_1;
+			poly *mab = poly_fast_gcd_matrix(op_2, op_1);
+			poly prod1 = poly_new();
+			poly prod2 = poly_new();
+			poly_fast_mul(prod1, mab[0], op_2);
+			poly_fast_mul(prod2, mab[1], op_1);
+			poly_add(d, prod1, prod2);
+			poly_copy(u, mab[1]);
+			poly_copy(v, mab[0]);
+			poly_free_multi(6, mab[0], mab[1], mab[2], mab[3], prod1, prod2);
+			free(mab);
 		}
-		poly *mab = poly_fast_gcd_matrix(op_a, op_b);
+	}
+}
+
+poly *poly_fast_gcd_partial_matrix(const poly r0, const poly r1, int limit)
+{
+	if ((r0->deg + 1) / 2 > limit)
+	{
+		// r0 = R0, r1 = R1
+		// 1.
+		// mdpgcd = D
+		poly *mdpgcd = poly_half_gcd(r0, r1);
+		// 2.
 		poly prod1 = poly_new();
 		poly prod2 = poly_new();
-		poly_fast_mul(prod1, mab[0], op_a);
-		poly_fast_mul(prod2, mab[1], op_b);
-		poly_add(d, prod1, prod2);
-		poly_copy(u, mab[0]);
-		poly_copy(v, mab[1]);
-		poly_free_multi(6, mab[0], mab[1], mab[2], mab[3], prod1, prod2);
-		free(mab);
+		poly_fast_mul(prod1, mdpgcd[0], r0);
+		poly_fast_mul(prod2, mdpgcd[1], r1);
+		// rj = Rj
+		poly rj = poly_new();
+		poly_add(rj, prod1, prod2);
+		poly_fast_mul(prod1, mdpgcd[2], r0);
+		poly_fast_mul(prod2, mdpgcd[3], r1);
+		// rjp1 = R(j+1)
+		poly rjp1 = poly_new();
+		poly_add(rjp1, prod1, prod2);
+		// 3.
+		if (rjp1->deg < limit)
+		{
+			poly_free_multi(4, prod1, prod2, rj, rjp1);
+			return mdpgcd;
+		}
+		// 4.
+		// qj = Qj
+		poly qj = poly_new();
+		// rjp2 = R(j+2)
+		poly rjp2 = poly_new();
+		poly_fast_euc_div(qj, rjp2, rj, rjp1);
+		// 5.
+		// Tj = [[0, 1], [1, -qj]]
+		// 6.
+		poly w2 = poly_new();
+		poly_fast_mul(prod1, qj, mdpgcd[2]);
+		poly_sub(w2, mdpgcd[0], prod1);
+		poly w3 = poly_new();
+		poly_fast_mul(prod1, qj, mdpgcd[3]);
+		poly_sub(w3, mdpgcd[1], prod1);
+		// Tj * D = [[mdpgcd[2], mdpgcd[3]], [w2, w3]]
+		// mgcd = matrix of gcd of R0 and R1
+		poly *mgcd = (poly *)malloc(4 * sizeof(poly));
+		assert(mgcd);
+		if (rjp2->deg < limit)
+		{
+			mgcd[0] = mdpgcd[2];
+			mgcd[1] = mdpgcd[3];
+			mgcd[2] = w2;
+			mgcd[3] = w3;
+			poly_free_multi(8, mdpgcd[0], mdpgcd[1], prod1, prod2, rj, rjp1, rjp2, qj);
+			free(mdpgcd);
+			return mgcd;
+		}
+		// 7.
+		// mrjp12 = N
+		poly *mrjp12 = poly_fast_gcd_partial_matrix(rjp1, rjp2, limit);
+		// 8.
+		for (int i = 0; i < 4; i++)
+			mgcd[i] = poly_new();
+		poly_fast_mul(prod1, mrjp12[0], mdpgcd[2]);
+		poly_fast_mul(prod2, mrjp12[1], w2);
+		poly_add(mgcd[0], prod1, prod2);
+		poly_fast_mul(prod1, mrjp12[0], mdpgcd[3]);
+		poly_fast_mul(prod2, mrjp12[1], w3);
+		poly_add(mgcd[1], prod1, prod2);
+		poly_fast_mul(prod1, mrjp12[2], mdpgcd[2]);
+		poly_fast_mul(prod2, mrjp12[3], w2);
+		poly_add(mgcd[2], prod1, prod2);
+		poly_fast_mul(prod1, mrjp12[2], mdpgcd[3]);
+		poly_fast_mul(prod2, mrjp12[3], w3);
+		poly_add(mgcd[3], prod1, prod2);
+		for (int i = 0; i < 4; i++)
+			poly_free_multi(2, mdpgcd[i], mrjp12[i]);
+		free(mdpgcd);
+		free(mrjp12);
+		poly_free_multi(8, prod1, prod2, rj, rjp1, rjp2, qj, w2, w3);
+		return mgcd;
+	}
+	else
+	{
+		int t = 2 * limit - r0->deg;
+		poly r0s = poly_new_deg(r0->deg - t);
+		for (int i = t; i <= r0->deg; i++)
+			r0s->coeffs[i - t] = r0->coeffs[i];
+		poly r1s = poly_new_deg(r1->deg - t);
+		for (int i = t; i <= r1->deg; i++)
+			r1s->coeffs[i - t] = r1->coeffs[i];
+		poly *ds = poly_half_gcd(r0s, r1s);
+		poly_free_multi(2, r0s, r1s);
+		return ds;
+	}
+}
+
+void poly_fast_xgcd_partial(poly d, poly u, poly v, const poly op_1, const poly op_2, int limit)
+{
+	if (op_1->deg == -1 && op_2->deg == -1)
+	{
+		fprintf(stderr, "there is no gcd of 0 and 0\n");
+        exit(EXIT_FAILURE);
+	}
+	if (op_1->deg < limit || op_2->deg < limit)
+	{
+		if (op_1->deg >= op_2->deg)
+		{
+			poly_copy(d, op_1);
+			poly_set_coeffs(u, 0, 1);
+			poly_clear(v);
+		}
+		else
+		{
+			poly_copy(d, op_2);
+			poly_clear(u);
+			poly_set_coeffs(v, 0, 1);
+		}
+	}
+	if (op_1->deg == op_2->deg)
+	{
+		poly quo = poly_new();
+		poly rem = poly_new();
+		poly_fast_euc_div(quo, rem, op_2, op_1);
+		poly_fast_xgcd_partial(d, u, v, op_1, rem, limit);
+		poly qv = poly_new();
+		poly_fast_mul(qv, quo, v);
+		poly_sub(u, u, qv);
+		poly_free_multi(3, quo, rem, qv);
+	}
+	else
+	{
+		if (op_1->deg > op_2->deg)
+		{
+			poly *mab = poly_fast_gcd_partial_matrix(op_1, op_2, limit);
+			poly prod1 = poly_new();
+			poly prod2 = poly_new();
+			poly_fast_mul(prod1, mab[2], op_1);
+			poly_fast_mul(prod2, mab[3], op_2);
+			poly_add(d, prod1, prod2);
+			poly_copy(u, mab[2]);
+			poly_copy(v, mab[3]);
+			poly_free_multi(6, mab[0], mab[1], mab[2], mab[3], prod1, prod2);
+			free(mab);
+		}
+		else if (op_1->deg < op_2->deg)
+		{
+			poly *mab = poly_fast_gcd_partial_matrix(op_2, op_1, limit);
+			poly prod1 = poly_new();
+			poly prod2 = poly_new();
+			poly_fast_mul(prod1, mab[2], op_2);
+			poly_fast_mul(prod2, mab[3], op_1);
+			poly_add(d, prod1, prod2);
+			poly_copy(u, mab[3]);
+			poly_copy(v, mab[2]);
+			poly_free_multi(6, mab[0], mab[1], mab[2], mab[3], prod1, prod2);
+			free(mab);
+		}
 	}
 }
