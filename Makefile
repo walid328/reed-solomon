@@ -34,4 +34,7 @@ test:
 	./build/test_polynomial "fast_euc_div"
 	./build/test_polynomial "fast_xgcd"
 	./build/test_rs_code "encode"
+	./build/test_rs_code "fast_encode"
 	./build/test_rs_code "decode"
+	./build/test_rs_code "encode_decode"
+	./build/test_rs_code "fast_encode_decode"

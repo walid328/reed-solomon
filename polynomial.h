@@ -137,17 +137,17 @@ int poly_eval(const poly f, int a);
 // Compute f(a) for each a in tab.
 array poly_eval_array(const poly f, const array tab, int tab_size);
 
-// Same as above but with powers of a privitime n-th root of unity.
-// f should have a degree < n.
-array poly_dft(const poly f);
-
 // Find the polynomial f such that f(a_i) = b_i for a in points
 // and b in eval using lagrange polynomials.
 void interpolation(poly rop, const array points, const array eval, int size);
 
-// Same as above but the evalutation points are the powers of a
-// primitive n-th root of unity.
-void poly_inv_dft(poly rop, array eval);
+// Discrete Fourrier transform for polynomials.
+// The evaluation points are powers of a primitive d-th root of unity.
+// d is a power of 2 dividing p-1.
+array poly_dft(const poly f, int d);
+
+// Inverse of fft.
+void poly_inv_dft(poly rop, array eval, int d);
 
 /******************************************************/
 
@@ -155,12 +155,12 @@ void poly_inv_dft(poly rop, array eval);
 
 // Works if p = q*d + 1 where d is a power of 2
 
-// Fast fourrier transform for polynomials. Same as poly_dft but in O(n log(n)).
-// the evaluation points are powers of a primitive d-th root of unity.
+// Fast Fourrier transform for polynomials. Same as poly_dft but in O(n log(n)).
+// The evaluation points are powers of a primitive d-th root of unity.
 // d is a power of 2 dividing p-1.
 array poly_fft(const poly f, int d);
 
-// Inverse of fft. Same as interpolation but faster.
+// Inverse of fft. Same as inv_dft with a better time complexity.
 void poly_inv_fft(poly rop, array eval, int d);
 
 /******************************************************/
@@ -169,10 +169,10 @@ void poly_inv_fft(poly rop, array eval, int d);
 
 // Works if p = q*d + 1 where d is a power of 2
 
-// Same as poly_mul but faster.
+// Same as poly_mul with a better time complexity.
 void poly_fast_mul(poly rop, const poly op1, const poly op2);
 
-// Same as poly_euc_div but faster.
+// Same as poly_euc_div with a better time complexity.
 void poly_fast_euc_div(poly q, poly r, const poly op1, const poly op2);
 
 // return the matrix of half gcd of r0 and r1.
@@ -186,13 +186,13 @@ poly *poly_half_gcd(const poly r0, const poly r1);
 // M[2] * r0 + M[3] * r1 = 0
 poly *poly_fast_gcd_matrix(const poly r0, const poly r1);
 
-// compute d, u and v such that d = gcd(op_1, op_2)
-// and u * op_1 + v * op_2 = d
+// compute d, u and v such that d = gcd(op1, op2)
+// and u * op1 + v * op2 = d
 // it does it with a better time complexity than poly_xgcd.
-void poly_fast_xgcd(poly d, poly u, poly v, const poly op_1, const poly op_2);
+void poly_fast_xgcd(poly d, poly u, poly v, const poly op1, const poly op2);
 
 poly *poly_fast_gcd_partial_matrix(const poly r0, const poly r1, int limit);
 
-void poly_fast_xgcd_partial(poly d, poly u, poly v, const poly op_1, const poly op_2, int limit);
+void poly_fast_xgcd_partial(poly d, poly u, poly v, const poly op1, const poly op2, int limit);
 
 #endif

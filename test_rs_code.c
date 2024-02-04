@@ -24,13 +24,13 @@ void usage(int argc, char *argv[])
 
 bool test_encode(void)
 {
-    int n = 7;
-    int k = 3;
-    array points = array_new_set(n, 0, 1, 2, 3, 4, 5, 6);
-    array message = array_new_set(k, 1, 2, 3);
-    array test_codeword = rs_encode(n, k, points, message);
-    array codeword = array_new_set(n, 1, 6, 17, 34, 57, 86, 121);
-    assert(array_equal(test_codeword, codeword, n));
+    int block_length = 7;
+    int message_length = 3;
+    array points = array_new_set(block_length, 0, 1, 2, 3, 4, 5, 6);
+    array message = array_new_set(message_length, 1, 2, 3);
+    array test_codeword = rs_encode(block_length, message_length, points, message);
+    array codeword = array_new_set(block_length, 1, 6, 17, 34, 57, 86, 121);
+    assert(array_equal(test_codeword, codeword, block_length));
     array_free(points);
     array_free(message);
     array_free(test_codeword);
@@ -38,19 +38,67 @@ bool test_encode(void)
     return true;
 }
 
+bool test_fast_encode(void)
+{
+    int block_length = 8;
+    int message_length = 3;
+    array message = array_new_set(message_length, 1, 2, 3);
+    array test_codeword = rs_fast_encode(block_length, message_length, message);
+    array test_points = array_new(block_length);
+    for (int i = 0; i < block_length; i++)
+        test_points[i] = omegas[i * (n / block_length)];
+    array codeword = rs_encode(block_length, message_length, test_points, message);
+    assert(array_equal(test_codeword, codeword, block_length));
+    array_free(message);
+    array_free(test_codeword);
+    array_free(codeword);
+    array_free(test_points);
+    return true;
+}
+
 bool test_decode(void)
 {
-    int n = 7;
-    int k = 3;
-    array points = array_new_set(n, 0, 1, 2, 3, 4, 5, 6);
-    array received = array_new_set(n, 1, 6, 123, 456, 57, 86, 121);
-    array test_message = rs_decode(n, k, points, received);
-    array message = array_new_set(k, 1, 2, 3);
-    assert(array_equal(test_message, message, k));
+    int block_length = 7;
+    int message_length = 3;
+    array points = array_new_set(block_length, 0, 1, 2, 3, 4, 5, 6);
+    array received = array_new_set(block_length, 1, 6, 123, 456, 57, 86, 121);
+    array test_message = rs_decode(block_length, message_length, points, received);
+    array message = array_new_set(message_length, 1, 2, 3);
+    assert(array_equal(test_message, message, message_length));
     array_free(points);
     array_free(received);
     array_free(test_message);
     array_free(message);
+    return true;
+}
+
+bool test_encode_decode(void)
+{
+    int block_length = 7;
+    int message_length = 3;
+    array points = array_new_set(n, 0, 1, 2, 3, 4, 5, 6);
+    array message = array_new_set(message_length, 1, 2, 3);
+    array test_codeword = rs_encode(block_length, message_length, points, message);
+    array test_message = rs_decode(block_length, message_length, points, test_codeword);
+    assert(array_equal(message, test_message, message_length));
+    array_free(points);
+    array_free(message);
+    array_free(test_codeword);
+    array_free(test_message);
+    return true;
+}
+
+bool test_fast_encode_decode(void)
+{
+    int block_length = 8;
+    int message_length = 3;
+    array message = array_new_set(message_length, 1, 2, 3);
+    array test_codeword = rs_fast_encode(block_length, message_length, message);
+    array test_message = rs_fast_decode(block_length, message_length, test_codeword);
+    assert(array_equal(message, test_message, message_length));
+    array_free(message);
+    array_free(test_codeword);
+    array_free(test_message);
     return true;
 }
 
@@ -66,8 +114,14 @@ int main(int argc, char *argv[])
     bool ok = false;
     if (strcmp("encode", argv[1]) == 0)
         ok = test_encode();
+    else if (strcmp("fast_encode", argv[1]) == 0)
+        ok = test_fast_encode();
     else if (strcmp("decode", argv[1]) == 0)
         ok = test_decode();
+    else if (strcmp("encode_decode", argv[1]) == 0)
+        ok = test_encode_decode();
+    else if (strcmp("fast_encode_decode", argv[1]) == 0)
+        ok = test_fast_encode_decode();
 
     else
     {

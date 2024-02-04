@@ -132,6 +132,27 @@ bool test_xgcd(void)
     return true;
 }
 
+bool test_xgcd_partial(void)
+{
+    poly f = poly_new_rand(6);
+    poly g = poly_new_rand(3);
+    poly d = poly_new();
+    poly u = poly_new();
+    poly v = poly_new();
+    int limit = 2;
+    poly_xgcd_partial(d, u, v, f, g, limit);
+    assert(poly_deg(d) < 2);
+    poly uf = poly_new();
+    poly_mul(uf, u, f);
+    poly vg = poly_new();
+    poly_mul(vg, v, g);
+    poly test_xgcd = poly_new();
+    poly_add(test_xgcd, uf, vg);
+    assert(poly_equal(d, test_xgcd));
+    poly_free_multi(8, f, g, d, u, v, uf, vg, test_xgcd);
+    return true;
+}
+
 bool test_interpol(void)
 {
     poly f = poly_new_rand(4);
@@ -149,9 +170,9 @@ bool test_interpol(void)
 bool test_dft(void)
 {
     poly f = poly_new_rand(6);
-    array eval = poly_dft(f);
+    array eval = poly_dft(f, 8);
     poly test_dft = poly_new();
-    poly_inv_dft(test_dft, eval);
+    poly_inv_dft(test_dft, eval, 8);
     assert(poly_equal(test_dft, f));
     poly_free_multi(2, f, test_dft);
     array_free(eval);
@@ -217,6 +238,27 @@ bool test_fast_xgcd(void)
     return true;
 }
 
+bool test_fast_xgcd_partial(void)
+{
+    poly f = poly_new_rand(6);
+    poly g = poly_new_rand(3);
+    poly d = poly_new();
+    poly u = poly_new();
+    poly v = poly_new();
+    int limit = 2;
+    poly_fast_xgcd_partial(d, u, v, f, g, limit);
+    assert(poly_deg(d) < 2);
+    poly uf = poly_new();
+    poly_mul(uf, u, f);
+    poly vg = poly_new();
+    poly_mul(vg, v, g);
+    poly test_xgcd = poly_new();
+    poly_add(test_xgcd, uf, vg);
+    assert(poly_equal(d, test_xgcd));
+    poly_free_multi(8, f, g, d, u, v, uf, vg, test_xgcd);
+    return true;
+}
+
 int main(int argc, char *argv[])
 {
     field_settings_set(193);
@@ -245,6 +287,8 @@ int main(int argc, char *argv[])
         ok = test_euc_div();
     else if (strcmp("xgcd", argv[1]) == 0)
         ok = test_xgcd();
+    else if (strcmp("xgcd_partial", argv[1]) == 0)
+        ok = test_xgcd_partial();
     else if (strcmp("interpol", argv[1]) == 0)
         ok = test_interpol();
     else if (strcmp("dft", argv[1]) == 0)
@@ -257,24 +301,28 @@ int main(int argc, char *argv[])
         ok = test_fast_euc_div();
     else if (strcmp("fast_xgcd", argv[1]) == 0)
         ok = test_fast_xgcd();
-	else if (strcmp("all", argv[1]) == 0 || strcmp("*", argv[1]) == 0)
-	{
-		ok = test_new_free();
-		ok &= test_add();
-		ok &= test_mul();
-		ok &= test_copy();
-		ok &= test_rev();
-		ok &= test_deriv();
-		ok &= test_mul_scalar();
-		ok &= test_euc_div();
-		ok &= test_xgcd();
-		ok &= test_interpol();
-		ok &= test_dft();
-		ok &= test_fft();
-		ok &= test_fast_mul();
-		ok &= test_fast_euc_div();
-		ok &= test_fast_xgcd();
-	}
+    else if (strcmp("fast_xgcd_partial", argv[1]) == 0)
+        ok = test_fast_xgcd_partial();
+    else if (strcmp("all", argv[1]) == 0 || strcmp("*", argv[1]) == 0)
+    {
+        ok = test_new_free();
+        ok &= test_add();
+        ok &= test_mul();
+        ok &= test_copy();
+        ok &= test_rev();
+        ok &= test_deriv();
+        ok &= test_mul_scalar();
+        ok &= test_euc_div();
+        ok &= test_xgcd();
+        ok &= test_xgcd_partial();
+        ok &= test_interpol();
+        ok &= test_dft();
+        ok &= test_fft();
+        ok &= test_fast_mul();
+        ok &= test_fast_euc_div();
+        ok &= test_fast_xgcd();
+        ok &= test_fast_xgcd_partial();
+    }
 
     else
     {

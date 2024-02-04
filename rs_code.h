@@ -6,14 +6,32 @@
 // An implementation of Reed Solomon codes using Gao's method
 // for decoding.
 
-// Encode the message using RS(n, k) and return the
+/******************************************************/
+
+/* Encoding functions */
+
+// Encode the message using RS(block_length, message_length) and return the
 // corresponding codeword. message should have a size
-// of k at most. points should have n distinct elements.
-array rs_encode(int n, int k, array points, array message);
+// of message_length at most. points should have block_length distinct elements.
+array rs_encode(int block_length, int message_length, array points, array message);
+
+// Same as above but use fast operations. points can't be
+// choosen and should be powers of a primitive block_length^th root.
+// block_length should be a power of 2 smaller than n.
+array rs_fast_encode(int block_length, int message_length, array message);
+
+/******************************************************/
+
+/* Decoding function */
 
 // Decode the received message and return the corresponding
-// message. received should have a size of n at most. points
-// should have n distinct elements.
-array rs_decode(int n, int k, array points, array received);
+// message. received should have a size of block_length at most. points
+// should have block_length distinct elements.
+array rs_decode(int block_length, int message_length, array points, array received);
+
+// Same as above but use fast operations. points can't be
+// choosen and should be powers of a primitive block_length^th root.
+// block_length should be a power of 2 smaller than n.
+array rs_fast_decode(int block_length, int message_length, array received);
 
 #endif

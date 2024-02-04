@@ -27,13 +27,13 @@ int zp_rand();
 // Compute base^exp mod p using modular exponentiation.
 int zp_exp(int base, int exp);
 
-// Return a d^th primitive root of unity in Z/pZ.
-// We should have p = dq + 1 where d is a power of 2,
+// Return a n^th primitive root of unity in Z/pZ.
+// We should have p = nq + 1 where n is a power of 2,
 // and q is odd.
 int zp_prim_root();
 
-// Return the smallest d^th primitive root of unity in Z/pZ.
-// We should have p = dq + 1 where d is a power of 2,
+// Return the smallest n^th primitive root of unity in Z/pZ.
+// We should have p = nq + 1 where n is a power of 2,
 // and q is odd.
 int zp_prim_root_min();
 
