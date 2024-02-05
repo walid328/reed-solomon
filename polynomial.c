@@ -29,6 +29,13 @@ array poly_coeffs(const poly f)
     return f->coeffs;
 }
 
+int poly_leading_coeff(const poly f)
+{
+	if (f->deg == -1)
+		return 0;
+	return f->coeffs[f->deg];
+}
+
 void poly_set(poly f, int deg, array coeffs)
 {
     f->deg = deg;
@@ -546,6 +553,11 @@ void poly_euc_div(poly q, poly r, const poly op1, const poly op2)
         poly_copy(r, op1);
         return;
     }
+	if (poly_is_zero(op2))
+	{
+		fprintf(stderr, "Can't divide by 0!\n");
+		exit(EXIT_FAILURE);
+	}
     int deg_q, *coeffs_q;
     int deg_r, *coeffs_r;
     array rest = array_new(op1->deg + 1);
@@ -554,7 +566,7 @@ void poly_euc_div(poly q, poly r, const poly op1, const poly op2)
     deg_q = op1->deg - op2->deg;
     coeffs_q = array_new_zeros(deg_q + 1);
     deg_r = op1->deg;
-    int inv_LC_op2 = zp_inv(op2->coeffs[op2->deg]);
+    int inv_LC_op2 = zp_inv(poly_leading_coeff(op2));
     while (deg_r >= op2->deg)
     {
         int c = zp_mul(rest[deg_r], inv_LC_op2);
@@ -775,6 +787,17 @@ void poly_fast_mul(poly rop, const poly op1, const poly op2)
 
 void poly_fast_euc_div(poly quo, poly rem, const poly op1, const poly op2)
 {
+    if (op1->deg < op2->deg)
+    {
+        poly_clear(quo);
+        poly_copy(rem, op1);
+        return;
+    }
+	if (poly_is_zero(op2))
+	{
+		fprintf(stderr, "Can't divide by 0!\n");
+		exit(EXIT_FAILURE);
+	}
     int deg_p = op1->deg;
     int deg_d = op2->deg;
     array coeffs_quo = NULL;
@@ -879,7 +902,7 @@ poly *poly_half_gcd(const poly r0, const poly r1)
     // rjp1s = R(j+1)*
     poly rjp1s = poly_new_deg(rjp1->deg - l);
     for (int i = l; i <= rjp1->deg; i++)
-        rjp1s[i - l] = rjp1[i];
+        rjp1s->coeffs[i - l] = rjp1->coeffs[i];
     // rjp2s = R(j+2)*
     poly rjp2s;
     if (rjp2->deg < l)

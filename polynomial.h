@@ -19,6 +19,8 @@ int poly_deg(const poly f);
 // Return the array of coefficients of f.
 array poly_coeffs(const poly f);
 
+int poly_leading_coeff(const poly f);
+
 // Set the polynomial f with the given values.
 // coeffs should be manually allocated (with
 // array_new for instance).
@@ -161,6 +163,7 @@ void poly_inv_dft(poly rop, array eval, int d);
 // Fast Fourrier transform for polynomials. Same as poly_dft but in O(n log(n)).
 // The evaluation points are powers of a primitive d-th root of unity.
 // d is a power of 2 dividing p-1.
+// d is at least deg(f) + 1.
 array poly_fft(const poly f, int d);
 
 // Inverse of fft. Same as inv_dft with a better time complexity.

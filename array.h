@@ -27,6 +27,8 @@ array array_new_zeros(int tab_size);
 // Combine array_new and array_set.
 array array_new_set(int tab_size, ...);
 
+array array_new_rand(int tab_size);
+
 /******************************************************/
 
 /* Cleaning functions */

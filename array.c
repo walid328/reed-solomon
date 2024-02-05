@@ -43,6 +43,14 @@ array array_new_set(int tab_size, ...)
     return tab;
 }
 
+array array_new_rand(int tab_size)
+{
+	array tab = array_new(tab_size);
+	for (int i = 0; i < tab_size; i++)
+		tab[i] = zp_rand();
+	return tab;
+}
+
 /******************************************************/
 
 void array_free(array tab)

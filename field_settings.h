@@ -4,6 +4,8 @@
 #include "array.h"
 
 // p is the size of the field.
+// (p-1) + (p-1) <= 2^31 - 1 to avoid overflow.
+// <==> p <= 2147483648
 // p = q*n + 1 where n is a power of 2 and q is odd.
 // omega is a n^th root of unity.
 // omegas is an array containing the powers of omega.
