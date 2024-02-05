@@ -72,7 +72,7 @@ void str_add_int(char *string, array index, int n)
 
 char *str_poly_iso_length(poly f)
 {
-    if (f->deg == -1)
+    if (poly_is_zero(f))
     {
         char *poly_string = (char *)malloc(2 * sizeof(char));
         assert(poly_string);
@@ -129,7 +129,7 @@ void poly_print(const poly f)
 
 poly poly_new(void)
 {
-    poly f = (poly)malloc(sizeof(poly));
+    poly f = (poly)malloc(sizeof(struct polynomial));
     assert(f);
     poly_set(f, -1, NULL);
     return f;
@@ -138,8 +138,7 @@ poly poly_new(void)
 poly poly_new_deg(int deg)
 {
     poly f = poly_new();
-    array coeffs = array_new(deg + 1);
-    poly_set(f, deg, coeffs);
+    poly_set_deg(f, deg);
     return f;
 }
 
@@ -253,6 +252,13 @@ poly poly_new_str(char *str)
     return f;
 }
 
+poly poly_new_copy(const poly src)
+{
+    poly f = poly_new_deg(src->deg);
+    poly_copy(f, src);
+    return f;
+}
+
 /******************************************************/
 
 void poly_clear(poly f)
@@ -293,6 +299,11 @@ void poly_free_multi(int qty, ...)
 
 /******************************************************/
 
+bool poly_is_zero(const poly f)
+{
+    return f->deg == -1;
+}
+
 bool poly_equal(const poly f, const poly g)
 {
     if (poly_deg(f) != poly_deg(g))
@@ -314,14 +325,6 @@ void poly_copy(poly dst, const poly src)
     }
     poly_clear(dst);
     poly_set(dst, deg, coeffs);
-}
-
-poly poly_new_copy(const poly src)
-{
-    poly f = poly_new_deg(src->deg);
-    if (f->deg > -1)
-        memcpy(f->coeffs, src->coeffs, (f->deg + 1) * sizeof(int));
-    return f;
 }
 
 void poly_set_deg(poly f, int deg)
@@ -416,7 +419,7 @@ void poly_add(poly rop, const poly op1, const poly op2)
         for (; i <= deg; i++)
             coeffs[i] = op2->coeffs[i];
     }
-    else if (op1->deg == -1)
+    else if (poly_is_zero(op1))
     {
         deg = -1;
         coeffs = NULL;
@@ -466,7 +469,7 @@ void poly_sub(poly rop, const poly op1, const poly op2)
         for (; i <= deg; i++)
             coeffs[i] = zp_opp(op2->coeffs[i]);
     }
-    else if (op1->deg == -1)
+    else if (poly_is_zero(op1))
     {
         deg = -1;
         coeffs = NULL;
@@ -496,7 +499,7 @@ void poly_sub(poly rop, const poly op1, const poly op2)
 void poly_mul(poly rop, const poly op1, const poly op2)
 {
     int deg, *coeffs;
-    if (op1->deg == -1 || op2->deg == -1)
+    if (poly_is_zero(op1) || poly_is_zero(op2))
     {
         deg = -1;
         coeffs = NULL;
@@ -516,7 +519,7 @@ void poly_mul(poly rop, const poly op1, const poly op2)
 void poly_mul_scalar(poly rop, int op1, const poly op2)
 {
     int deg, *coeffs;
-    if (op1 == 0 || op2->deg == -1)
+    if (op1 == 0 || poly_is_zero(op2))
     {
         deg = -1;
         coeffs = NULL;
@@ -741,23 +744,30 @@ void poly_inv_fft(poly rop, array eval, int d)
 
 void poly_fast_mul(poly rop, const poly op1, const poly op2)
 {
-    int d = 1;
-    while (d < op1->deg + op2->deg + 1)
-        d *= 2;
-    if (d > n)
+    if (poly_is_zero(op1) || poly_is_zero(op2))
     {
-        fprintf(stderr, "There is no %d-th root of unity!\n", d);
-        exit(EXIT_FAILURE);
+        poly_clear(rop);
     }
-    array eval_op1 = poly_fft(op1, d);
-    array eval_op2 = poly_fft(op2, d);
-    array eval_rop = array_new(d);
-    for (int i = 0; i < d; i++)
-        eval_rop[i] = zp_mul(eval_op1[i], eval_op2[i]);
-    poly_inv_fft(rop, eval_rop, d);
-    array_free(eval_op1);
-    array_free(eval_op2);
-    array_free(eval_rop);
+    else
+    {
+        int d = 1;
+        while (d < op1->deg + op2->deg + 1)
+            d *= 2;
+        if (d > n)
+        {
+            fprintf(stderr, "There is no %d-th root of unity!\n", d);
+            exit(EXIT_FAILURE);
+        }
+        array eval_op1 = poly_fft(op1, d);
+        array eval_op2 = poly_fft(op2, d);
+        array eval_rop = array_new(d);
+        for (int i = 0; i < d; i++)
+            eval_rop[i] = zp_mul(eval_op1[i], eval_op2[i]);
+        poly_inv_fft(rop, eval_rop, d);
+        array_free(eval_op1);
+        array_free(eval_op2);
+        array_free(eval_rop);
+    }
 }
 
 void poly_fast_euc_div(poly quo, poly rem, const poly op1, const poly op2)
@@ -923,7 +933,7 @@ poly *poly_fast_gcd_matrix(const poly r0, const poly r1)
     poly rjp1 = poly_new();
     poly_add(rjp1, prod1, prod2);
     // 3.
-    if (rjp1->deg == -1)
+    if (poly_is_zero(rjp1))
     {
         poly_free_multi(4, prod1, prod2, rj, rjp1);
         return mdpgcd;
@@ -947,7 +957,7 @@ poly *poly_fast_gcd_matrix(const poly r0, const poly r1)
     // mgcd = matrix of gcd of R0 and R1
     poly *mgcd = (poly *)malloc(4 * sizeof(poly));
     assert(mgcd);
-    if (rjp2->deg == -1)
+    if (poly_is_zero(rjp2))
     {
         mgcd[0] = mdpgcd[2];
         mgcd[1] = mdpgcd[3];
@@ -985,7 +995,7 @@ poly *poly_fast_gcd_matrix(const poly r0, const poly r1)
 
 void poly_fast_xgcd(poly d, poly u, poly v, const poly op1, const poly op2)
 {
-    if (op1->deg == -1 && op2->deg == -1)
+    if (poly_is_zero(op1) && poly_is_zero(op2))
     {
         fprintf(stderr, "there is no gcd of 0 and 0\n");
         exit(EXIT_FAILURE);
@@ -1130,7 +1140,7 @@ poly *poly_fast_gcd_partial_matrix(const poly r0, const poly r1, int limit)
 
 void poly_fast_xgcd_partial(poly d, poly u, poly v, const poly op1, const poly op2, int limit)
 {
-    if (op1->deg == -1 && op2->deg == -1)
+    if (poly_is_zero(op1) && poly_is_zero(op2))
     {
         fprintf(stderr, "there is no gcd of 0 and 0\n");
         exit(EXIT_FAILURE);

@@ -55,6 +55,9 @@ poly poly_new_str(char *str);
 // Return a random polynomial with degree deg.
 poly poly_new_rand(int deg);
 
+// Return a copy of the source polynomial.
+poly poly_new_copy(const poly src);
+
 /******************************************************/
 
 /* Cleaning functions */
@@ -76,14 +79,14 @@ void poly_free_multi(int qty, ...);
 
 /* Utility functions */
 
+// Return true if f = 0, else false.
+bool poly_is_zero(const poly f);
+
 // Return true if polynomials are the same, else false.
 bool poly_equal(const poly f, const poly g);
 
 // Put a copy of the source polynomial in destination.
 void poly_copy(poly dst, const poly src);
-
-// Create a copy of the source polynomial.
-poly poly_new_copy(const poly src);
 
 // Clear f, set his degree and allocate his array coeffs.
 void poly_set_deg(poly f, int deg);

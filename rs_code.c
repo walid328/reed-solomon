@@ -43,12 +43,12 @@ array rs_decode(int block_length, int message_length, array points, array receiv
     poly g = poly_new();
     poly u = poly_new();
     poly v = poly_new();
-    poly_xgcd_partial(g, u, v, g_0, g_1, (block_length + message_length) / 2);
+    poly_xgcd_partial(g, u, v, g_0, g_1, (block_length + message_length + 1) / 2);
     poly f_1 = poly_new();
     poly r = poly_new();
     poly_euc_div(f_1, r, g, v);
     poly_free_multi(5, g_0, g_1, g, u, v);
-    if (poly_deg(r) == -1 && poly_deg(f_1) < message_length)
+    if (poly_is_zero(r) && poly_deg(f_1) < message_length)
     {
         array message = array_new(message_length);
         for (int i = 0; i < message_length; i++)
@@ -78,7 +78,7 @@ array rs_fast_decode(int block_length, int message_length, array received)
     poly g = poly_new();
     poly u = poly_new();
     poly v = poly_new();
-    poly_fast_xgcd_partial(g, u, v, g_0, g_1, (block_length + message_length) / 2);
+    poly_fast_xgcd_partial(g, u, v, g_0, g_1, (block_length + message_length + 1) / 2);
     poly f_1 = poly_new();
     poly r = poly_new();
     poly_fast_euc_div(f_1, r, g, v);
