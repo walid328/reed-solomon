@@ -252,9 +252,24 @@ poly poly_new_str(char *str)
     return f;
 }
 
+poly poly_new_rand(int deg)
+{
+    poly f = poly_new();
+	if (deg >= 0)
+	{
+		array coeffs = array_new(deg + 1);
+		for (int i = 0; i <= deg; i++)
+			coeffs[i] = zp_rand();
+		while (coeffs[deg] == 0)
+			coeffs[deg] = zp_rand();
+		poly_set(f, deg, coeffs);
+	}
+    return f;
+}
+
 poly poly_new_copy(const poly src)
 {
-    poly f = poly_new_deg(src->deg);
+    poly f = poly_new();
     poly_copy(f, src);
     return f;
 }
@@ -348,18 +363,6 @@ void poly_set_coeffs(poly f, int deg, ...)
             f->coeffs[i] = va_arg(valist, int);
         va_end(valist);
     }
-}
-
-poly poly_new_rand(int deg)
-{
-    poly f = poly_new();
-    array coeffs = array_new(deg + 1);
-    for (int i = 0; i <= deg; i++)
-        coeffs[i] = zp_rand();
-    while (coeffs[deg] == 0)
-        coeffs[deg] = zp_rand();
-    poly_set(f, deg, coeffs);
-    return f;
 }
 
 void poly_rev(poly rop, const poly f)

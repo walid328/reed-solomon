@@ -73,8 +73,8 @@ bool array_equal(array tab1, array tab2, int tab_size)
 
 void array_split(array *even, array *odd, array tab, int tab_size)
 {
-    *even = array_new(tab_size / 2 * sizeof(int));
-    *odd = array_new(tab_size / 2 * sizeof(int));
+    *even = array_new(tab_size / 2);
+    *odd = array_new(tab_size / 2);
     for (int i = 0; i < tab_size / 2; i++)
     {
         (*even)[i] = tab[2 * i];
@@ -84,7 +84,7 @@ void array_split(array *even, array *odd, array tab, int tab_size)
 
 array array_merge(array even, array odd, int subtab_size)
 {
-    array tab = array_new(2 * subtab_size * sizeof(int));
+    array tab = array_new(2 * subtab_size);
     for (int i = 0; i < subtab_size; i++)
     {
         tab[2 * i] = even[i];
