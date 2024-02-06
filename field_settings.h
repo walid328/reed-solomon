@@ -1,4 +1,3 @@
-
 #ifndef FIELD_SETTINGS_H
 #define FIELD_SETTINGS_H
 

@@ -1,7 +1,6 @@
 CC= gcc
 FLAGS= -Wall -g
 OBJ= build/polynomial.o build/finite_field.o build/field_settings.o build/array.o build/rs_code.o
-
 TEST_TARGET= build/test_polynomial build/test_rs_code build/main
 
 all: $(TEST_TARGET)

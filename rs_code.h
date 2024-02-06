@@ -1,4 +1,3 @@
-
 #ifndef RS_CODE_H
 #define RS_CODE_H
 
