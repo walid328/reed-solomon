@@ -1,3 +1,4 @@
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -77,7 +78,7 @@ bool test_encode_decode(void)
     array message = array_new_set(message_length, 1, 2, 3);
     array test_codeword = rs_encode(block_length, message_length, points, message);
     array_add_errors(test_codeword, block_length, (block_length - message_length + 1) / 2);
-    array test_message = rs_decode(block_length, message_length, points, test_codeword);
+	array test_message = rs_decode(block_length, message_length, points, test_codeword);
     assert(array_equal(message, test_message, message_length));
     array_free(points);
     array_free(message);

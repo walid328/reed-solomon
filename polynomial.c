@@ -1,3 +1,4 @@
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdarg.h>
@@ -271,7 +272,6 @@ poly poly_new_rand(int deg)
             coeffs[deg] = zp_rand();
         poly_set(f, deg, coeffs);
     }
-    return f;
 }
 
 poly poly_new_copy(const poly src)
