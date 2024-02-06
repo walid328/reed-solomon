@@ -161,6 +161,37 @@ array array_inv_fft(array eval, int d)
 
 array formal_serie_mul(array P, array Q, int d)
 {
+	if (d == 2 * n)
+	{
+		array P0 = array_new_zeros(n);
+		array P1 = array_new_zeros(n);
+		array Q0 = array_new_zeros(n);
+		array Q1 = array_new_zeros(n);
+		for (int i = 0; i < n / 2; i++)
+			P0[i] = P[i];
+		for (int i = n / 2; i < n; i++)
+			P1[i - n / 2] = P[i];
+		for (int i = 0; i < n / 2; i++)
+			Q0[i] = Q[i];
+		for (int i = n / 2; i < n; i++)
+			Q1[i - n / 2] = Q[i];
+		array P0Q0 = formal_serie_mul(P0, Q0, n);
+		array P0Q1 = formal_serie_mul(P0, Q1, n);
+		array P1Q0 = formal_serie_mul(P1, Q0, n);
+		array res = array_new_zeros(d);
+		for (int i = 0; i < n / 2; i++)
+			res[i] = P0Q0[i];
+		for (int i = n / 2; i < n; i++)
+			res[i] = zp_add(P0Q0[i], zp_add(P0Q1[i - n / 2], P1Q0[i - n / 2]));
+		array_free(P0);
+		array_free(P1);
+		array_free(Q0);
+		array_free(Q1);
+		array_free(P0Q0);
+		array_free(P0Q1);
+		array_free(P1Q0);
+		return res;
+	}
     array eval_P = array_fft(P, d);
     array eval_Q = array_fft(Q, d);
     array eval_res = array_new(d);
@@ -181,29 +212,33 @@ array formal_serie_inv(array P, int d)
         Q[0] = zp_inv(P[0]);
         return Q;
     }
-    array Q_0 = formal_serie_inv(P, d / 2);
-    array Q_0d = array_new_zeros(2 * d);
+    array Q0 = formal_serie_inv(P, d / 2);
+    array Q0_d = array_new_zeros(d);
     for (int i = 0; i < d / 2; i++)
-        Q_0d[i] = Q_0[i];
-    array Q_a = formal_serie_mul(Q_0d, Q_0d, 2 * d);
-    array P_0 = array_new_zeros(2 * d);
+        Q0_d[i] = Q0[i];
+    array Qa = formal_serie_mul(Q0_d, Q0_d, d);
+    array P_2d = array_new_zeros(2 * d);
     for (int i = 0; i < d; i++)
-        P_0[i] = P[i];
-    array Q_a2 = formal_serie_mul(P_0, Q_a, 2 * d);
-    array Q = array_new_zeros(2 * d);
+        P_2d[i] = P[i];
+	array Qa_2d = array_new_zeros(2 * d);
+	for (int i = 0; i < d; i++)
+		Qa_2d[i] = Qa[i];
+    array Qa2 = formal_serie_mul(P_2d, Qa_2d, 2 * d);
+    array Q = array_new_zeros(d);
     for (int i = 0; i < d / 2; i++)
-        Q[i] = Q_0[i];
+        Q[i] = Q0[i];
     for (int i = d / 2; i < d; i++)
-        Q[i] = zp_opp(Q_a2[i]);
-    array_free(Q_0);
-    array_free(Q_0d);
-    array_free(P_0);
-    array_free(Q_a);
-    array_free(Q_a2);
+        Q[i] = zp_opp(Qa2[i]);
+    array_free(Q0);
+    array_free(Q0_d);
+    array_free(Qa);
+    array_free(P_2d);
+    array_free(Qa_2d);
+    array_free(Qa2);
     return Q;
 }
 
-void formal_serie_fast_euc_div(array *quo, array *rem, array op_p, int deg_p, array op_d, int deg_d)
+void formal_serie_fast_euc_div(array *quo, array *rem, array P, int deg_p, array D, int deg_d)
 {
     // dm is the smallest power of 2 greater or equal to deg_d
     int dm = 1;
@@ -213,32 +248,36 @@ void formal_serie_fast_euc_div(array *quo, array *rem, array op_p, int deg_p, ar
     // dnmm is the smallest power of 2 greater or equal to op_p - deg_d + 1
     while (dnmm < deg_p - deg_d + 1)
         dnmm <<= 1;
-    array op_pp = array_new_zeros(2 * dnmm);
-    array op_dp = array_new_zeros(dnmm);
+    array P_prime = array_new_zeros(2 * dnmm);
+    array D_prime = array_new_zeros(dnmm);
     for (int i = 0; i < deg_p - deg_d + 1; i++)
-        op_pp[i] = op_p[deg_p - i];
+        P_prime[i] = P[deg_p - i];
     for (int i = 0; (i < (deg_p - deg_d + 1)) && (i < (deg_d + 1)); i++)
-        op_dp[i] = op_d[deg_d - i];
-    array op_dpp = formal_serie_inv(op_dp, dnmm);
-    array qp = formal_serie_mul(op_pp, op_dpp, 2 * dnmm);
+        D_prime[i] = D[deg_d - i];
+    array D_prime_prime = formal_serie_inv(D_prime, dnmm);
+	array D_prime_prime_2dnmm = array_new_zeros(2 * dnmm);
+	for (int i = 0; i < dnmm; i++)
+		D_prime_prime_2dnmm[i] = D_prime_prime[i];
+    array Q_prime = formal_serie_mul(P_prime, D_prime_prime_2dnmm, 2 * dnmm);
     *quo = array_new(deg_p - deg_d + 1);
     for (int i = 0; i < deg_p - deg_d + 1; i++)
-        (*quo)[i] = qp[deg_p - deg_d - i];
-    array qdm = array_new_zeros(2 * dm);
+        (*quo)[i] = Q_prime[deg_p - deg_d - i];
+    array Q_2dm = array_new_zeros(2 * dm);
     for (int i = 0; i < deg_p - deg_d + 1 && i < deg_d; i++)
-        qdm[i] = (*quo)[i];
-    array op_ddm = array_new_zeros(2 * dm);
+        Q_2dm[i] = (*quo)[i];
+    array D_2dm = array_new_zeros(2 * dm);
     for (int i = 0; i < deg_d; i++)
-        op_ddm[i] = op_d[i];
-    array qd = formal_serie_mul(qdm, op_ddm, 2 * dm);
+        D_2dm[i] = D[i];
+    array QD = formal_serie_mul(Q_2dm, D_2dm, 2 * dm);
     *rem = array_new(deg_d);
     for (int i = 0; i < deg_d; i++)
-        (*rem)[i] = zp_sub(op_p[i], qd[i]);
-    array_free(op_pp);
-    array_free(op_dp);
-    array_free(op_dpp);
-    array_free(qp);
-    array_free(qdm);
-    array_free(op_ddm);
-    array_free(qd);
+        (*rem)[i] = zp_sub(P[i], QD[i]);
+    array_free(P_prime);
+    array_free(D_prime);
+    array_free(D_prime_prime);
+    array_free(D_prime_prime_2dnmm);
+    array_free(Q_prime);
+    array_free(Q_2dm);
+    array_free(D_2dm);
+    array_free(QD);
 }

@@ -15,6 +15,7 @@ extern int q;
 extern int n;
 extern int omega;
 extern array omegas;
+extern array inverses;
 
 void field_settings_set(int p_);
 

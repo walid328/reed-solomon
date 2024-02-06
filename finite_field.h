@@ -18,7 +18,10 @@ int zp_opp(int a);
 // Compute a*b mod p.
 int zp_mul(int a, int b);
 
-// Compute a^(-1) mod p.
+// Compute a^(-1) mod p via xgcd.
+int zp_inv_xgcd(int a);
+
+// Return a^(-1) mod p via precomputed table.
 int zp_inv(int a);
 
 // Return a random element of Z/pZ.

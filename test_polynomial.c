@@ -14,6 +14,7 @@ int q = 0;
 int n = 0;
 int omega = 0;
 array omegas = NULL;
+array inverses = NULL;
 
 void usage(int argc, char *argv[])
 {

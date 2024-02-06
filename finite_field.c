@@ -12,17 +12,24 @@ int zp_mod(int a)
 
 int zp_add(int a, int b)
 {
-    return zp_mod(a + b);
+	int sum = a + b;
+	if (sum >= p)
+		return sum - p;
+	return sum;
 }
 
 int zp_sub(int a, int b)
 {
-    return zp_mod(a - b);
+	if (b > a)
+		return (a + p) - b;
+    return a - b;
 }
 
 int zp_opp(int a)
 {
-    return zp_mod(-a);
+	if (a == 0)
+		return 0;
+	return p - a;
 }
 
 int zp_mul(int a, int b)
@@ -38,7 +45,7 @@ int zp_rand(void)
     return zp_mod((rand() << 24) ^ (rand() << 16) ^ (rand() << 8) ^ rand());
 }
 
-int zp_inv(int a)
+int zp_inv_xgcd(int a)
 {
     if (a == 0)
     {
@@ -63,6 +70,11 @@ int zp_inv(int a)
     if (v1 < 0)
         v1 += p;
     return v1;
+}
+
+int zp_inv(int a)
+{
+	return inverses[a];
 }
 
 int zp_exp(int base, int exp)

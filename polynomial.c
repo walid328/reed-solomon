@@ -649,7 +649,6 @@ void poly_xgcd_partial(poly d, poly u, poly v, const poly op1, const poly op2, i
         u1 = u2;
         v1 = v2;
     }
-    // We want d to be monic.
     poly_copy(d, r1);
     poly_copy(u, u1);
     poly_copy(v, v1);
@@ -707,6 +706,11 @@ void interpolation(poly rop, const array points, const array eval, int size)
 
 array poly_dft(const poly f, int d)
 {
+	if (d > n && n % d != 0)
+	{
+		fprintf(stderr, "There is no %d-th root of unity!\n", d);
+		exit(EXIT_FAILURE);
+	}
     array eval = array_new(d);
     for (int i = 0; i < d; i++)
         eval[i] = poly_eval(f, omegas[i * (n / d)]);
@@ -715,6 +719,11 @@ array poly_dft(const poly f, int d)
 
 void poly_inv_dft(poly rop, array eval, int d)
 {
+	if (d > n && n % d != 0)
+	{
+		fprintf(stderr, "There is no %d-th root of unity!\n", d);
+		exit(EXIT_FAILURE);
+	}
     array points = array_new(d);
     for (int i = 0; i < d; i++)
         points[i] = omegas[i * (n / d)];
@@ -726,6 +735,11 @@ void poly_inv_dft(poly rop, array eval, int d)
 
 array poly_fft(const poly f, int d)
 {
+	if (d > n && n % d != 0)
+	{
+		fprintf(stderr, "There is no %d-th root of unity!\n", d);
+		exit(EXIT_FAILURE);
+	}
     // We need some padding.
     array coeffs = array_new_zeros(d);
     for (int i = 0; i <= f->deg; i++)
@@ -737,6 +751,11 @@ array poly_fft(const poly f, int d)
 
 void poly_inv_fft(poly rop, array eval, int d)
 {
+	if (d > n && n % d != 0)
+	{
+		fprintf(stderr, "There is no %d-th root of unity!\n", d);
+		exit(EXIT_FAILURE);
+	}
     array f_coeffs = array_inv_fft(eval, d);
     int deg = d - 1;
     while (deg >= 0 && f_coeffs[deg] == 0)
@@ -768,11 +787,6 @@ void poly_fast_mul(poly rop, const poly op1, const poly op2)
         int d = 1;
         while (d < op1->deg + op2->deg + 1)
             d *= 2;
-        if (d > n)
-        {
-            fprintf(stderr, "There is no %d-th root of unity!\n", d);
-            exit(EXIT_FAILURE);
-        }
         array eval_op1 = poly_fft(op1, d);
         array eval_op2 = poly_fft(op2, d);
         array eval_rop = array_new(d);
