@@ -15,9 +15,11 @@
 // of message_length at most. points should have block_length distinct elements.
 array rs_encode(int block_length, int message_length, array points, array message);
 
-// Same as above but use fast operations. points can't be
-// choosen and should be powers of a primitive block_length^th root.
-// block_length should be a power of 2 smaller than n.
+// Same as above but points can't be choosen and should be powers of a
+// primitive block_length^th root. block_length should be a power of 2 smaller than n.
+array rs_encode_2(int block_length, int message_length, array message);
+
+// Same as above but use fast operations.
 array rs_fast_encode(int block_length, int message_length, array message);
 
 /******************************************************/
@@ -29,9 +31,11 @@ array rs_fast_encode(int block_length, int message_length, array message);
 // should have block_length distinct elements.
 array rs_decode(int block_length, int message_length, array points, array received);
 
-// Same as above but use fast operations. points can't be
-// choosen and should be powers of a primitive block_length^th root.
-// block_length should be a power of 2 smaller than n.
+// Same as above but points can't be choosen and should be powers of a
+// primitive block_length^th root. block_length should be a power of 2 smaller than n.
+array rs_decode_2(int block_length, int message_length, array received);
+
+// Same as above but use fast operations.
 array rs_fast_decode(int block_length, int message_length, array received);
 
 #endif

@@ -31,9 +31,9 @@ array poly_coeffs(const poly f)
 
 int poly_leading_coeff(const poly f)
 {
-	if (f->deg == -1)
-		return 0;
-	return f->coeffs[f->deg];
+    if (f->deg == -1)
+        return 0;
+    return f->coeffs[f->deg];
 }
 
 void poly_set(poly f, int deg, array coeffs)
@@ -262,15 +262,15 @@ poly poly_new_str(char *str)
 poly poly_new_rand(int deg)
 {
     poly f = poly_new();
-	if (deg >= 0)
-	{
-		array coeffs = array_new(deg + 1);
-		for (int i = 0; i <= deg; i++)
-			coeffs[i] = zp_rand();
-		while (coeffs[deg] == 0)
-			coeffs[deg] = zp_rand();
-		poly_set(f, deg, coeffs);
-	}
+    if (deg >= 0)
+    {
+        array coeffs = array_new(deg + 1);
+        for (int i = 0; i <= deg; i++)
+            coeffs[i] = zp_rand();
+        while (coeffs[deg] == 0)
+            coeffs[deg] = zp_rand();
+        poly_set(f, deg, coeffs);
+    }
     return f;
 }
 
@@ -553,11 +553,11 @@ void poly_euc_div(poly q, poly r, const poly op1, const poly op2)
         poly_copy(r, op1);
         return;
     }
-	if (poly_is_zero(op2))
-	{
-		fprintf(stderr, "Can't divide by 0!\n");
-		exit(EXIT_FAILURE);
-	}
+    if (poly_is_zero(op2))
+    {
+        fprintf(stderr, "Can't divide by 0!\n");
+        exit(EXIT_FAILURE);
+    }
     int deg_q, *coeffs_q;
     int deg_r, *coeffs_r;
     array rest = array_new(op1->deg + 1);
@@ -807,11 +807,11 @@ void poly_fast_euc_div(poly quo, poly rem, const poly op1, const poly op2)
         poly_copy(rem, op1);
         return;
     }
-	if (poly_is_zero(op2))
-	{
-		fprintf(stderr, "Can't divide by 0!\n");
-		exit(EXIT_FAILURE);
-	}
+    if (poly_is_zero(op2))
+    {
+        fprintf(stderr, "Can't divide by 0!\n");
+        exit(EXIT_FAILURE);
+    }
     int deg_p = op1->deg;
     int deg_d = op2->deg;
     array coeffs_quo = NULL;

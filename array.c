@@ -45,10 +45,10 @@ array array_new_set(int tab_size, ...)
 
 array array_new_rand(int tab_size)
 {
-	array tab = array_new(tab_size);
-	for (int i = 0; i < tab_size; i++)
-		tab[i] = zp_rand();
-	return tab;
+    array tab = array_new(tab_size);
+    for (int i = 0; i < tab_size; i++)
+        tab[i] = zp_rand();
+    return tab;
 }
 
 /******************************************************/
@@ -75,6 +75,15 @@ bool array_equal(array tab1, array tab2, int tab_size)
         if (tab1[i] != tab2[i])
             return false;
     return true;
+}
+
+void array_add_errors(array tab, int tab_size, int number_errors)
+{
+    for (int i = 0; i < number_errors; i++)
+    {
+        int random_position = rand() % tab_size;
+        tab[random_position] = zp_rand();
+    }
 }
 
 /******************************************************/
