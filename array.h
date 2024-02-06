@@ -47,6 +47,9 @@ void array_set(array tab, int tab_size, ...);
 // they have the same elements, false else.
 bool array_equal(array tab1, array tab2, int tab_size);
 
+// Add random errors on a given array.
+void array_add_errors(array tab, int tab_size, int number_errors);
+
 /******************************************************/
 
 /* Split and merge */

@@ -27,10 +27,10 @@ int zp_opp(int a)
 
 int zp_mul(int a, int b)
 {
-	long long int al = a;
-	long long int bl = b;
-	int ab = (al * bl) % p;
-	return ab;
+    long long int al = a;
+    long long int bl = b;
+    int ab = (al * bl) % p;
+    return ab;
 }
 
 int zp_rand(void)
