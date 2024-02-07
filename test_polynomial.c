@@ -9,6 +9,8 @@
 #include "array.h"
 #include "polynomial.h"
 
+// Tests for operations on polynomials.
+
 int p = 193;
 int q = 0;
 int n = 0;
@@ -18,8 +20,16 @@ array inverses = NULL;
 
 void usage(int argc, char *argv[])
 {
-    fprintf(stderr, "Usage: %s <testname> [<...>]\n", argv[0]);
+    fprintf(stderr, "\e[1mUsage:\e[0m %s <testname>\n", argv[0]);
     exit(EXIT_FAILURE);
+}
+
+void print_result(bool res, char *test_name)
+{
+    if (res)
+        printf("Test %s finished: \e[1;32mSUCCESS\e[0m\n", test_name);
+    else
+        printf("Test %s finished: \e[1;31mFAILURE\e[0m\n", test_name);
 }
 
 bool test_new_free(void)
@@ -90,9 +100,7 @@ bool test_mul_scalar(void)
 bool test_euc_div(void)
 {
     poly f = poly_new_rand(6);
-    poly_print(f);
     poly g = poly_new_rand(3);
-    poly_print(g);
     poly q = poly_new();
     poly r = poly_new();
     poly_euc_div(q, r, f, g);
@@ -254,83 +262,91 @@ bool test_fast_xgcd_partial(void)
 
 int main(int argc, char *argv[])
 {
-    field_settings_set(193);
-
-    if (argc == 1)
+    if (argc < 3)
         usage(argc, argv);
 
+    int p_ = atoi(argv[1]);
+    field_settings_set(p_);
+
     // start test
-    fprintf(stderr, "=> Start test \"%s\"\n", argv[1]);
     bool ok = false;
-    if (strcmp("new_free", argv[1]) == 0)
+    if (strcmp("new_free", argv[2]) == 0)
         ok = test_new_free();
-    else if (strcmp("add", argv[1]) == 0)
+    else if (strcmp("add", argv[2]) == 0)
         ok = test_add();
-    else if (strcmp("mul", argv[1]) == 0)
+    else if (strcmp("mul", argv[2]) == 0)
         ok = test_mul();
-    else if (strcmp("copy", argv[1]) == 0)
+    else if (strcmp("copy", argv[2]) == 0)
         ok = test_copy();
-    else if (strcmp("deriv", argv[1]) == 0)
+    else if (strcmp("deriv", argv[2]) == 0)
         ok = test_deriv();
-    else if (strcmp("mul_scalar", argv[1]) == 0)
+    else if (strcmp("mul_scalar", argv[2]) == 0)
         ok = test_mul_scalar();
-    else if (strcmp("euc_div", argv[1]) == 0)
+    else if (strcmp("euc_div", argv[2]) == 0)
         ok = test_euc_div();
-    else if (strcmp("xgcd", argv[1]) == 0)
+    else if (strcmp("xgcd", argv[2]) == 0)
         ok = test_xgcd();
-    else if (strcmp("xgcd_partial", argv[1]) == 0)
+    else if (strcmp("xgcd_partial", argv[2]) == 0)
         ok = test_xgcd_partial();
-    else if (strcmp("interpol", argv[1]) == 0)
+    else if (strcmp("interpol", argv[2]) == 0)
         ok = test_interpol();
-    else if (strcmp("dft", argv[1]) == 0)
+    else if (strcmp("dft", argv[2]) == 0)
         ok = test_dft();
-    else if (strcmp("fft", argv[1]) == 0)
+    else if (strcmp("fft", argv[2]) == 0)
         ok = test_fft();
-    else if (strcmp("fast_mul", argv[1]) == 0)
+    else if (strcmp("fast_mul", argv[2]) == 0)
         ok = test_fast_mul();
-    else if (strcmp("fast_euc_div", argv[1]) == 0)
+    else if (strcmp("fast_euc_div", argv[2]) == 0)
         ok = test_fast_euc_div();
-    else if (strcmp("fast_xgcd", argv[1]) == 0)
+    else if (strcmp("fast_xgcd", argv[2]) == 0)
         ok = test_fast_xgcd();
-    else if (strcmp("fast_xgcd_partial", argv[1]) == 0)
+    else if (strcmp("fast_xgcd_partial", argv[2]) == 0)
         ok = test_fast_xgcd_partial();
-    else if (strcmp("all", argv[1]) == 0 || strcmp("*", argv[1]) == 0)
+    else if (strcmp("polynomial", argv[2]) == 0 || strcmp("all", argv[2]) == 0 || strcmp("*", argv[2]) == 0)
     {
         ok = test_new_free();
+        print_result(ok, "new_free");
         ok &= test_add();
+        print_result(ok, "add");
         ok &= test_mul();
+        print_result(ok, "mul");
         ok &= test_copy();
+        print_result(ok, "copy");
         ok &= test_deriv();
+        print_result(ok, "deriv");
         ok &= test_mul_scalar();
+        print_result(ok, "mul_scalar");
         ok &= test_euc_div();
+        print_result(ok, "euc_div");
         ok &= test_xgcd();
+        print_result(ok, "xgcd");
         ok &= test_xgcd_partial();
+        print_result(ok, "xgcd_partial");
         ok &= test_interpol();
+        print_result(ok, "interpol");
         ok &= test_dft();
+        print_result(ok, "dft");
         ok &= test_fft();
+        print_result(ok, "fft");
         ok &= test_fast_mul();
+        print_result(ok, "fast_mul");
         ok &= test_fast_euc_div();
+        print_result(ok, "fast_euc_div");
         ok &= test_fast_xgcd();
+        print_result(ok, "fast_xgcd");
         ok &= test_fast_xgcd_partial();
+        print_result(ok, "fast_xgcd_partial");
     }
 
     else
     {
-        fprintf(stderr, "Error: test \"%s\" not found!\n", argv[1]);
+        fprintf(stderr, "Error: test \"%s\" not found!\n", argv[2]);
         exit(EXIT_FAILURE);
     }
 
-    // print test result
-    if (ok)
-    {
-        fprintf(stderr, "Test \"%s\" finished: \033[0;32mSUCCESS\033[0m\n", argv[1]);
-        field_settings_free();
-        return EXIT_SUCCESS;
-    }
-    else
-    {
-        fprintf(stderr, "Test \"%s\" finished: \033[0;31mFAILURE\033[0m\n", argv[1]);
-        field_settings_free();
-        return EXIT_FAILURE;
-    }
+    printf("==> ");
+    print_result(ok, argv[2]);
+
+    field_settings_free();
+    return EXIT_SUCCESS;
 }

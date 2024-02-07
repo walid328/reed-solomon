@@ -10,6 +10,8 @@
 #include "polynomial.h"
 #include "rs_code.h"
 
+// Tests to ensure that fast operations works the same.
+
 int p = 0;
 int q = 0;
 int n = 0;
@@ -17,54 +19,23 @@ zp_t omega = 0;
 array omegas = NULL;
 array inverses = NULL;
 
-bool comp_dft(int qty);
-
-bool comp_inv_dft(int qty);
-
-bool comp_mul(int qty);
-
-bool comp_euc_div(int qty);
-
-bool comp_gcd(int qty);
-
-bool comp_gcd_partial(int qty);
-
-bool comp_encode(int qty);
-
-bool comp_encode_decode(int qty);
-
-int main(void)
+void usage(int argc, char *argv[])
 {
-	field_settings_set(193);
+	fprintf(stderr, "\e[1;31mFailure: \e[0mNot enough parameters!\n");
+	fprintf(stderr, "\e[1mUsage:\e[0m %s <p> <qty>\n", argv[0]);
+	exit(EXIT_FAILURE);
+}
 
-	bool bon;
-	/*
-	bon = comp_dft(3);
-	printf("%d comp_dft fait %d\n", bon, bon);
-	bon = comp_inv_dft(3);
-	printf("%d comp_inv_dft fait %d\n", bon, bon);
-	bon = comp_mul(5);
-	printf("%d comp_mul fait %d\n", bon, bon);
-	bon = comp_euc_div(5);
-	printf("%d comp_euc_div fait %d\n", bon, bon);
-	bon = comp_gcd(5);
-	printf("%d comp_gcd fait %d\n", bon, bon);
-	bon = comp_gcd_partial(5);
-	printf("%d comp_gcd_partial fait %d\n", bon, bon);
-	*/
-	bon = comp_encode(5);
-	printf("%d comp_encode fait %d\n", bon, bon);
-	bon = comp_encode_decode(5);
-	printf("%d comp_encode_decode fait %d\n", bon, bon);
-
-	field_settings_free();
-	printf("fait\n");
-	return EXIT_SUCCESS;
+void print_result(bool res, char *test_name)
+{
+	if (res)
+		printf("Test \"%s\" finished: \e[1;32mSUCCESS\e[0m\n", test_name);
+	else
+		printf("Test \"%s\" finished: \e[1;31mFAILURE\e[0m\n", test_name);
 }
 
 bool comp_dft(int qty)
 {
-	bool bon = true;
 	for (int dega = -1; dega < n; dega++)
 	{
 		for (int i = 0; i < qty; i++)
@@ -79,11 +50,11 @@ bool comp_dft(int qty)
 				array eval2 = poly_fft(pa, d);
 				if (!array_equal(eval1, eval2, d))
 				{
-					bon = false;
-					printf("resultats distincts dft et fft\n");
+					printf("Execution stopped for values:\n");
 					poly_print(pa);
 					array_print(eval1, d);
 					array_print(eval2, d);
+					return false;
 				}
 				array_free(eval1);
 				array_free(eval2);
@@ -92,12 +63,11 @@ bool comp_dft(int qty)
 			poly_free(pa);
 		}
 	}
-	return bon;
+	return true;
 }
 
 bool comp_inv_dft(int qty)
 {
-	bool bon = true;
 	for (int d = 1; d <= n; d *= 2)
 	{
 		for (int i = 0; i < qty; i++)
@@ -109,22 +79,21 @@ bool comp_inv_dft(int qty)
 			poly_inv_fft(pb, eval, d);
 			if (!poly_equal(pa, pb))
 			{
-				bon = false;
-				printf("resultats distincts inv_dft et inv_fft\n");
+				printf("Execution stopped for values:\n");
 				array_print(eval, d);
 				poly_print(pa);
 				poly_print(pb);
+				return false;
 			}
 			array_free(eval);
 			poly_free_multi(2, pa, pb);
 		}
 	}
-	return bon;
+	return true;
 }
 
 bool comp_mul(int qty)
 {
-	bool bon = true;
 	for (int dega = -1; dega <= 2 * n; dega++)
 	{
 		for (int degb = -1; dega + degb + 1 <= 2 * n; degb++)
@@ -143,8 +112,7 @@ bool comp_mul(int qty)
 				poly_fast_mul(prod4, pb, pa);
 				if (!poly_equal(prod1, prod2) || !poly_equal(prod1, prod3) || !poly_equal(prod1, prod4))
 				{
-					bon = false;
-					printf("resultats distincts mul et fast_mul\n");
+					printf("Execution stopped for values:\n");
 					printf("%d\n", poly_equal(prod1, prod2));
 					printf("%d\n", poly_equal(prod1, prod3));
 					printf("%d\n", poly_equal(prod1, prod4));
@@ -154,19 +122,17 @@ bool comp_mul(int qty)
 					poly_print(prod2);
 					poly_print(prod3);
 					poly_print(prod4);
-					fprintf(stderr, "1 is not inversible!\n");
-					exit(EXIT_FAILURE);
+					return false;
 				}
 				poly_free_multi(6, pa, pb, prod1, prod2, prod3, prod4);
 			}
 		}
 	}
-	return bon;
+	return true;
 }
 
 bool comp_euc_div(int qty)
 {
-	bool bon = true;
 	for (int dega = -1; dega <= 2 * n - 1; dega++)
 	{
 		int min_degb = 0;
@@ -189,8 +155,7 @@ bool comp_euc_div(int qty)
 				poly_add(verif, verif, rem1);
 				if (!poly_equal(quo1, quo2) || !poly_equal(rem1, rem2) || !poly_equal(verif, pa) || poly_deg(rem1) >= poly_deg(pb))
 				{
-					bon = false;
-					printf("resultats distincts euc_div et fast_euc_div\n");
+					printf("Execution stopped for values:\n");
 					printf("pa :\n");
 					poly_print(pa);
 					printf("pb :\n");
@@ -205,19 +170,17 @@ bool comp_euc_div(int qty)
 					poly_print(rem2);
 					printf("verif :\n");
 					poly_print(verif);
-					fprintf(stderr, "1 is not inversible!\n");
-					exit(EXIT_FAILURE);
+					return false;
 				}
 				poly_free_multi(7, pa, pb, quo1, quo2, rem1, rem2, verif);
 			}
 		}
 	}
-	return bon;
+	return true;
 }
 
-bool comp_gcd(int qty)
+bool comp_xgcd(int qty)
 {
-	bool bon = true;
 	for (int dega = -1; dega <= n; dega++)
 	{
 		for (int degb = -1; degb <= n; degb++)
@@ -256,8 +219,7 @@ bool comp_gcd(int qty)
 					poly_add(verif2, prod1, prod2);
 					if (!poly_equal(d1, d2) || !poly_equal(d1, verif1) || !poly_equal(d2, verif2))
 					{
-						bon = false;
-						printf("resultats distincts xgcd et fast_xgcd\n");
+						printf("Execution stopped for values:\n");
 						poly_print(pa);
 						poly_print(pb);
 						poly_print(d1);
@@ -266,18 +228,18 @@ bool comp_gcd(int qty)
 						poly_print(d2);
 						poly_print(u2);
 						poly_print(v2);
+						return false;
 					}
 					poly_free_multi(12, pa, pb, d1, u1, v1, d2, u2, v2, verif1, verif2, prod1, prod2);
 				}
 			}
 		}
 	}
-	return bon;
+	return true;
 }
 
-bool comp_gcd_partial(int qty)
+bool comp_xgcd_partial(int qty)
 {
-	bool bon = true;
 	for (int dega = -1; dega <= n; dega++)
 	{
 		for (int degb = -1; degb <= n; degb++)
@@ -319,8 +281,7 @@ bool comp_gcd_partial(int qty)
 						poly_add(verif2, prod1, prod2);
 						if (!poly_equal(d1, d2) || !poly_equal(d1, verif1) || !poly_equal(d2, verif2))
 						{
-							bon = false;
-							printf("resultats distincts xgcd_partial et fast_xgcd_partial\n");
+							printf("Execution stopped for values:\n");
 							printf("limit = %d\n", limit);
 							poly_print(pa);
 							poly_print(pb);
@@ -330,7 +291,7 @@ bool comp_gcd_partial(int qty)
 							poly_print(d2);
 							poly_print(u2);
 							poly_print(v2);
-							exit(EXIT_FAILURE);
+							return false;
 						}
 						poly_free_multi(12, pa, pb, d1, u1, v1, d2, u2, v2, verif1, verif2, prod1, prod2);
 					}
@@ -338,12 +299,11 @@ bool comp_gcd_partial(int qty)
 			}
 		}
 	}
-	return bon;
+	return true;
 }
 
 bool comp_encode(int qty)
 {
-	bool bon = true;
 	for (int block_length = 2; block_length <= n; block_length *= 2)
 	{
 		for (int message_length = 1; message_length < block_length; message_length++)
@@ -355,11 +315,11 @@ bool comp_encode(int qty)
 				array codeword2 = rs_fast_encode(block_length, message_length, message);
 				if (!array_equal(codeword1, codeword2, block_length))
 				{
-					bon = false;
-					printf("resultats distincts encode et fast_encode\n");
+					printf("Execution stopped for values:\n");
 					array_print(message, message_length);
 					array_print(codeword1, block_length);
 					array_print(codeword2, block_length);
+					return false;
 				}
 				array_free(message);
 				array_free(codeword1);
@@ -367,12 +327,11 @@ bool comp_encode(int qty)
 			}
 		}
 	}
-	return bon;
+	return true;
 }
 
-bool comp_encode_decode(int qty)
+bool comp_decode(int qty)
 {
-	bool bon = true;
 	for (int block_length = 2; block_length <= n; block_length *= 2)
 	{
 		poly g_0 = poly_new();
@@ -383,7 +342,6 @@ bool comp_encode_decode(int qty)
 			{
 				for (int i = 0; i < qty; i++)
 				{
-
 					array message = array_new_rand(message_length);
 					array received = rs_fast_encode(block_length, message_length, message);
 					array_add_errors(received, block_length, number_errors);
@@ -391,12 +349,12 @@ bool comp_encode_decode(int qty)
 					array decode2 = rs_fast_decode(g_0, block_length, message_length, received);
 					if (!array_equal(decode1, message, message_length) || !array_equal(decode1, decode2, message_length))
 					{
-						bon = false;
-						printf("resultats distincts encode_decode et fast_encode_decode\n");
+						printf("Execution stopped for values:\n");
 						array_print(message, message_length);
 						array_print(received, block_length);
 						array_print(decode1, message_length);
 						array_print(decode2, message_length);
+						return false;
 					}
 					array_free(message);
 					array_free(received);
@@ -407,5 +365,65 @@ bool comp_encode_decode(int qty)
 		}
 		poly_free(g_0);
 	}
-	return bon;
+	return true;
+}
+
+int main(int argc, char *argv[])
+{
+	if (argc < 3)
+		usage(argc, argv);
+
+	int p_ = atoi(argv[1]);
+	field_settings_set(p_);
+
+	int qty = 1;
+
+	bool ok;
+	if (strcmp("dft", argv[2]) == 0)
+		ok = comp_dft(qty);
+	else if (strcmp("inv_dft", argv[2]) == 0)
+		ok = comp_inv_dft(qty);
+	else if (strcmp("mul", argv[2]) == 0)
+		ok = comp_mul(qty);
+	else if (strcmp("euc_div", argv[2]) == 0)
+		ok = comp_euc_div(qty);
+	else if (strcmp("xgcd", argv[2]) == 0)
+		ok = comp_xgcd(qty);
+	else if (strcmp("xgcd_partial", argv[2]) == 0)
+		ok = comp_xgcd_partial(qty);
+	else if (strcmp("encode", argv[2]) == 0)
+		ok = comp_encode(qty);
+	else if (strcmp("decode", argv[2]) == 0)
+		ok = comp_decode(qty);
+	else if (strcmp("compare", argv[2]) == 0 || strcmp("all", argv[2]) == 0 || strcmp("*", argv[2]) == 0)
+	{
+		ok = comp_dft(qty);
+		print_result(ok, "comp_dft");
+		ok = comp_inv_dft(qty);
+		print_result(ok, "comp_inv_dft");
+		ok = comp_mul(qty);
+		print_result(ok, "comp_mul");
+		ok = comp_euc_div(qty);
+		print_result(ok, "comp_euc_div");
+		ok = comp_xgcd(qty);
+		print_result(ok, "comp_xgcd");
+		ok = comp_xgcd_partial(qty);
+		print_result(ok, "comp_partial");
+		ok = comp_encode(qty);
+		print_result(ok, "comp_encode");
+		ok = comp_decode(qty);
+		print_result(ok, "comp_decode");
+	}
+
+	else
+	{
+		fprintf(stderr, "Error: test \"%s\" not found!\n", argv[2]);
+		exit(EXIT_FAILURE);
+	}
+
+	printf("==> ");
+	print_result(ok, argv[2]);
+
+	field_settings_free();
+	return EXIT_SUCCESS;
 }

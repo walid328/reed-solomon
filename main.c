@@ -19,7 +19,9 @@ array inverses = NULL;
 
 void usage(int argc, char *argv[])
 {
-    fprintf(stderr, "\e[1;31mFailure: \e[0mNot enough parameters!\nUsage: %s -option [args]\nUse -h for more information.\n", argv[0]);
+    fprintf(stderr, "\e[1;31mFailure: \e[0mNot enough parameters!\n");
+    fprintf(stderr, "\e[1mUsage:\e[0m %s -option [args]\n", argv[0]);
+    fprintf(stderr, "Use -h for more information.\n");
     exit(EXIT_FAILURE);
 }
 
@@ -27,11 +29,11 @@ void usage(int argc, char *argv[])
 // using RS(n,k) with fast operations.
 void encode(int argc, char *argv[])
 {
-    unsigned int block_length = strtoul(argv[3], NULL, 10);
-    unsigned int message_length = strtoul(argv[4], NULL, 10);
+    int block_length = atoi(argv[3]);
+    int message_length = atoi(argv[4]);
     array message = array_new(message_length);
     for (int i = 0; i < message_length; i++)
-        message[i] = strtoul(argv[5 + i], NULL, 10);
+        message[i] = atoi(argv[5 + i]);
     array codeword = rs_fast_encode(block_length, message_length, message);
     printf("The codeword is:\n");
     array_print(codeword, block_length);
@@ -43,11 +45,11 @@ void encode(int argc, char *argv[])
 // using RS(n,k) with fast operations.
 void decode(int argc, char *argv[])
 {
-    unsigned int block_length = strtoul(argv[3], NULL, 10);
-    unsigned int message_length = strtoul(argv[4], NULL, 10);
+    int block_length = atoi(argv[3]);
+    int message_length = atoi(argv[4]);
     array received = array_new(block_length);
     for (int i = 0; i < block_length; i++)
-        received[i] = strtoul(argv[5 + i], NULL, 10);
+        received[i] = atoi(argv[5 + i]);
     poly g_0 = poly_new();
     rs_g_0_fourier(g_0, block_length);
     array message = rs_fast_decode(g_0, block_length, message_length, received);
