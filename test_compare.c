@@ -397,22 +397,30 @@ int main(int argc, char *argv[])
 		ok = comp_decode(qty);
 	else if (strcmp("compare", argv[2]) == 0 || strcmp("all", argv[2]) == 0 || strcmp("*", argv[2]) == 0)
 	{
-		ok = comp_dft(qty);
-		print_result(ok, "comp_dft");
-		ok = comp_inv_dft(qty);
-		print_result(ok, "comp_inv_dft");
-		ok = comp_mul(qty);
-		print_result(ok, "comp_mul");
-		ok = comp_euc_div(qty);
-		print_result(ok, "comp_euc_div");
-		ok = comp_xgcd(qty);
-		print_result(ok, "comp_xgcd");
-		ok = comp_xgcd_partial(qty);
-		print_result(ok, "comp_partial");
-		ok = comp_encode(qty);
-		print_result(ok, "comp_encode");
-		ok = comp_decode(qty);
-		print_result(ok, "comp_decode");
+		bool sub_ok = comp_dft(qty);
+		print_result(sub_ok, "comp_dft");
+		ok = sub_ok;
+		sub_ok = comp_inv_dft(qty);
+		print_result(sub_ok, "comp_inv_dft");
+		ok &= sub_ok;
+		sub_ok = comp_mul(qty);
+		print_result(sub_ok, "comp_mul");
+		ok &= sub_ok;
+		sub_ok = comp_euc_div(qty);
+		print_result(sub_ok, "comp_euc_div");
+		ok &= sub_ok;
+		sub_ok = comp_xgcd(qty);
+		print_result(sub_ok, "comp_xgcd");
+		ok &= sub_ok;
+		sub_ok = comp_xgcd_partial(qty);
+		print_result(sub_ok, "comp_partial");
+		ok &= sub_ok;
+		sub_ok = comp_encode(qty);
+		print_result(sub_ok, "comp_encode");
+		ok &= sub_ok;
+		sub_ok = comp_decode(qty);
+		print_result(sub_ok, "comp_decode");
+		ok &= sub_ok;
 	}
 
 	else

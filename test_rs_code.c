@@ -127,7 +127,7 @@ int main(int argc, char *argv[])
     int p_ = atoi(argv[1]);
     field_settings_set(p_);
 
-    bool ok = false;
+    bool ok;
     if (strcmp("encode", argv[2]) == 0)
         ok = test_encode();
     else if (strcmp("fast_encode", argv[2]) == 0)
@@ -140,16 +140,21 @@ int main(int argc, char *argv[])
         ok = test_fast_encode_decode();
     else if (strcmp("rs_code", argv[2]) == 0 || strcmp("all", argv[2]) == 0 || strcmp("*", argv[2]))
     {
-        ok = test_encode();
-        print_result(ok, "encode");
-        ok &= test_fast_encode();
-        print_result(ok, "fast_encode");
-        ok &= test_encode_decode();
-        print_result(ok, "encode_decode");
-        ok &= test_encode_decode_2();
-        print_result(ok, "encode_decode_2");
-        ok &= test_fast_encode_decode();
-        print_result(ok, "fast_encode_decode");
+        bool sub_ok = test_encode();
+        print_result(sub_ok, "encode");
+        ok = sub_ok;
+        sub_ok = test_fast_encode();
+        print_result(sub_ok, "fast_encode");
+        ok &= sub_ok;
+        sub_ok = test_encode_decode();
+        print_result(sub_ok, "encode_decode");
+        ok &= sub_ok;
+        sub_ok = test_encode_decode_2();
+        print_result(sub_ok, "encode_decode_2");
+        ok &= sub_ok;
+        sub_ok = test_fast_encode_decode();
+        print_result(sub_ok, "fast_encode_decode");
+        ok &= sub_ok;
     }
 
     else

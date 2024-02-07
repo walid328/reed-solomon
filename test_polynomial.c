@@ -269,7 +269,7 @@ int main(int argc, char *argv[])
     field_settings_set(p_);
 
     // start test
-    bool ok = false;
+    bool ok;
     if (strcmp("new_free", argv[2]) == 0)
         ok = test_new_free();
     else if (strcmp("add", argv[2]) == 0)
@@ -304,38 +304,54 @@ int main(int argc, char *argv[])
         ok = test_fast_xgcd_partial();
     else if (strcmp("polynomial", argv[2]) == 0 || strcmp("all", argv[2]) == 0 || strcmp("*", argv[2]) == 0)
     {
-        ok = test_new_free();
-        print_result(ok, "new_free");
-        ok &= test_add();
-        print_result(ok, "add");
-        ok &= test_mul();
-        print_result(ok, "mul");
-        ok &= test_copy();
-        print_result(ok, "copy");
-        ok &= test_deriv();
-        print_result(ok, "deriv");
-        ok &= test_mul_scalar();
-        print_result(ok, "mul_scalar");
-        ok &= test_euc_div();
-        print_result(ok, "euc_div");
-        ok &= test_xgcd();
-        print_result(ok, "xgcd");
-        ok &= test_xgcd_partial();
-        print_result(ok, "xgcd_partial");
-        ok &= test_interpol();
-        print_result(ok, "interpol");
-        ok &= test_dft();
-        print_result(ok, "dft");
-        ok &= test_fft();
-        print_result(ok, "fft");
-        ok &= test_fast_mul();
-        print_result(ok, "fast_mul");
-        ok &= test_fast_euc_div();
-        print_result(ok, "fast_euc_div");
-        ok &= test_fast_xgcd();
-        print_result(ok, "fast_xgcd");
-        ok &= test_fast_xgcd_partial();
-        print_result(ok, "fast_xgcd_partial");
+        bool sub_ok = test_new_free();
+        print_result(sub_ok, "new_free");
+        ok = sub_ok;
+        sub_ok = test_add();
+        print_result(sub_ok, "add");
+        ok &= sub_ok;
+        sub_ok = test_mul();
+        print_result(sub_ok, "mul");
+        ok &= sub_ok;
+        sub_ok = test_copy();
+        print_result(sub_ok, "copy");
+        ok &= sub_ok;
+        sub_ok = test_deriv();
+        print_result(sub_ok, "deriv");
+        ok &= sub_ok;
+        sub_ok = test_mul_scalar();
+        print_result(sub_ok, "mul_scalar");
+        ok &= sub_ok;
+        sub_ok = test_euc_div();
+        print_result(sub_ok, "euc_div");
+        ok &= sub_ok;
+        sub_ok = test_xgcd();
+        print_result(sub_ok, "xgcd");
+        ok &= sub_ok;
+        sub_ok = test_xgcd_partial();
+        print_result(sub_ok, "xgcd_partial");
+        ok &= sub_ok;
+        sub_ok = test_interpol();
+        print_result(sub_ok, "interpol");
+        ok &= sub_ok;
+        sub_ok = test_dft();
+        print_result(sub_ok, "dft");
+        ok &= sub_ok;
+        sub_ok = test_fft();
+        print_result(sub_ok, "fft");
+        ok &= sub_ok;
+        sub_ok = test_fast_mul();
+        print_result(sub_ok, "fast_mul");
+        ok &= sub_ok;
+        sub_ok = test_fast_euc_div();
+        print_result(sub_ok, "fast_euc_div");
+        ok &= sub_ok;
+        sub_ok = test_fast_xgcd();
+        print_result(sub_ok, "fast_xgcd");
+        ok &= sub_ok;
+        sub_ok = test_fast_xgcd_partial();
+        print_result(sub_ok, "fast_xgcd_partial");
+        ok &= sub_ok;
     }
 
     else
