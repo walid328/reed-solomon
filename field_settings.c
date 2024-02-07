@@ -2,11 +2,10 @@
 #include <assert.h>
 
 #include "field_settings.h"
-#include "finite_field.h"
 
 void field_settings_set(int p_)
 {
-	p = p_;
+    p = p_;
     q = p - 1;
     n = 1;
     while ((q & 1) == 0)
@@ -22,14 +21,14 @@ void field_settings_set(int p_)
     {
         omegas[i] = zp_mul(omegas[i - 1], omega);
     }
-	inverses = array_new(p);
-	inverses[0] = 0;
-	for (int i = 1; i < p; i++)
-		inverses[i] = zp_inv_xgcd(i);
+    inverses = array_new(p);
+    inverses[0] = 0;
+    for (int i = 1; i < p; i++)
+        inverses[i] = zp_inv_xgcd(i);
 }
 
 void field_settings_free(void)
 {
     array_free(omegas);
-	array_free(inverses);
+    array_free(inverses);
 }

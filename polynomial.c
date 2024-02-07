@@ -6,7 +6,6 @@
 
 #include "polynomial.h"
 #include "field_settings.h"
-#include "finite_field.h"
 #include "array.h"
 
 /******************************************************/
@@ -29,7 +28,7 @@ array poly_coeffs(const poly f)
     return f->coeffs;
 }
 
-int poly_leading_coeff(const poly f)
+zp_t poly_leading_coeff(const poly f)
 {
     if (f->deg == -1)
         return 0;
@@ -44,6 +43,8 @@ void poly_set(poly f, int deg, array coeffs)
 
 /******************************************************/
 
+// Give the size of the string of n.
+// For instance if n = 123, return 3.
 int size_int_str(int n)
 {
     int ret = 1;
@@ -57,7 +58,10 @@ int size_int_str(int n)
     return ret;
 }
 
-void str_add_int(char *string, array index, int n)
+// Add a zp_t into a string.
+// index indicate the end of the string.
+// For instance str_add_int("123 + ", 6, 2) -> "123 + 2", 7
+void str_add_int(char *string, int *index, zp_t n)
 {
     if (n == 0)
     {
@@ -77,6 +81,7 @@ void str_add_int(char *string, array index, int n)
     *index += size_n;
 }
 
+// Return a string representing f.
 char *str_poly_iso_length(poly f)
 {
     if (poly_is_zero(f))
@@ -158,14 +163,14 @@ poly poly_new_set(int deg, ...)
         va_list valist;
         va_start(valist, deg);
         for (int i = 0; i <= deg; i++)
-            coeffs[i] = va_arg(valist, int);
+            coeffs[i] = va_arg(valist, zp_t);
         va_end(valist);
         poly_set(f, deg, coeffs);
     }
     return f;
 }
 
-int next_coeff(char *str, array i)
+int next_coeff(char *str, int *i)
 {
     while (str[*i] != '\0' && str[*i] != '-' && (str[*i] < '0' || str[*i] > '9') && str[*i] != 'x' && str[*i] != 'X')
         *i += 1;
@@ -190,7 +195,8 @@ int next_coeff(char *str, array i)
     return sign * n;
 }
 
-array coeffs_from_str(char *str, array deg)
+// Return an array of coefficients from a string.
+array coeffs_from_str(char *str, int *deg)
 {
     int i = 0;
     int t = 100;
@@ -271,7 +277,7 @@ poly poly_new_rand(int deg)
             coeffs[deg] = zp_rand();
         poly_set(f, deg, coeffs);
     }
-	return f;
+    return f;
 }
 
 poly poly_new_copy(const poly src)
@@ -372,22 +378,10 @@ void poly_set_coeffs(poly f, int deg, ...)
     }
 }
 
-void poly_rev(poly rop, const poly f)
-{
-    int deg_rev, *coeffs_rev;
-    deg_rev = f->deg;
-    for (int i = 0; f->coeffs[i] == 0; i++)
-        deg_rev--;
-    coeffs_rev = array_new(deg_rev + 1);
-    for (int i = 0; i <= deg_rev; i++)
-        coeffs_rev[i] = f->coeffs[f->deg - i];
-    poly_clear(rop);
-    poly_set(rop, deg_rev, coeffs_rev);
-}
-
 void poly_deriv(poly rop, const poly op)
 {
-    int deg, *coeffs;
+    int deg;
+    array coeffs;
     if (op->deg < 1)
     {
         deg = -1;
@@ -408,7 +402,8 @@ void poly_deriv(poly rop, const poly op)
 
 void poly_add(poly rop, const poly op1, const poly op2)
 {
-    int deg, *coeffs;
+    int deg;
+    array coeffs;
     if (op1->deg > op2->deg)
     {
         deg = op1->deg;
@@ -458,7 +453,8 @@ void poly_add(poly rop, const poly op1, const poly op2)
 
 void poly_sub(poly rop, const poly op1, const poly op2)
 {
-    int deg, *coeffs;
+    int deg;
+    array coeffs;
     if (op1->deg > op2->deg)
     {
         deg = op1->deg;
@@ -508,7 +504,8 @@ void poly_sub(poly rop, const poly op1, const poly op2)
 
 void poly_mul(poly rop, const poly op1, const poly op2)
 {
-    int deg, *coeffs;
+    int deg;
+    array coeffs;
     if (poly_is_zero(op1) || poly_is_zero(op2))
     {
         deg = -1;
@@ -526,9 +523,10 @@ void poly_mul(poly rop, const poly op1, const poly op2)
     poly_set(rop, deg, coeffs);
 }
 
-void poly_mul_scalar(poly rop, int op1, const poly op2)
+void poly_mul_scalar(poly rop, zp_t op1, const poly op2)
 {
-    int deg, *coeffs;
+    int deg;
+    array coeffs;
     if (op1 == 0 || poly_is_zero(op2))
     {
         deg = -1;
@@ -558,18 +556,17 @@ void poly_euc_div(poly q, poly r, const poly op1, const poly op2)
         fprintf(stderr, "Can't divide by 0!\n");
         exit(EXIT_FAILURE);
     }
-    int deg_q, *coeffs_q;
-    int deg_r, *coeffs_r;
     array rest = array_new(op1->deg + 1);
     for (int i = 0; i <= op1->deg; i++)
         rest[i] = op1->coeffs[i];
-    deg_q = op1->deg - op2->deg;
-    coeffs_q = array_new_zeros(deg_q + 1);
-    deg_r = op1->deg;
-    int inv_LC_op2 = zp_inv(poly_leading_coeff(op2));
+    int deg_q = op1->deg - op2->deg;
+    array coeffs_q = array_new_zeros(deg_q + 1);
+    int deg_r = op1->deg;
+    array coeffs_r;
+    zp_t inv_LC_op2 = zp_inv(poly_leading_coeff(op2));
     while (deg_r >= op2->deg)
     {
-        int c = zp_mul(rest[deg_r], inv_LC_op2);
+        zp_t c = zp_mul(rest[deg_r], inv_LC_op2);
         coeffs_q[deg_r - op2->deg] = c;
         for (int i = 0; i <= op2->deg; i++)
             rest[i + deg_r - op2->deg] = zp_sub(rest[i + deg_r - op2->deg], zp_mul(c, op2->coeffs[i]));
@@ -706,11 +703,11 @@ void interpolation(poly rop, const array points, const array eval, int size)
 
 array poly_dft(const poly f, int d)
 {
-	if (d > n && n % d != 0)
-	{
-		fprintf(stderr, "There is no %d-th root of unity!\n", d);
-		exit(EXIT_FAILURE);
-	}
+    if (d > n && n % d != 0)
+    {
+        fprintf(stderr, "There is no %d-th root of unity!\n", d);
+        exit(EXIT_FAILURE);
+    }
     array eval = array_new(d);
     for (int i = 0; i < d; i++)
         eval[i] = poly_eval(f, omegas[i * (n / d)]);
@@ -719,11 +716,11 @@ array poly_dft(const poly f, int d)
 
 void poly_inv_dft(poly rop, array eval, int d)
 {
-	if (d > n && n % d != 0)
-	{
-		fprintf(stderr, "There is no %d-th root of unity!\n", d);
-		exit(EXIT_FAILURE);
-	}
+    if (d > n && n % d != 0)
+    {
+        fprintf(stderr, "There is no %d-th root of unity!\n", d);
+        exit(EXIT_FAILURE);
+    }
     array points = array_new(d);
     for (int i = 0; i < d; i++)
         points[i] = omegas[i * (n / d)];
@@ -735,11 +732,11 @@ void poly_inv_dft(poly rop, array eval, int d)
 
 array poly_fft(const poly f, int d)
 {
-	if (d > n && n % d != 0)
-	{
-		fprintf(stderr, "There is no %d-th root of unity!\n", d);
-		exit(EXIT_FAILURE);
-	}
+    if (d > n && n % d != 0)
+    {
+        fprintf(stderr, "There is no %d-th root of unity!\n", d);
+        exit(EXIT_FAILURE);
+    }
     // We need some padding.
     array coeffs = array_new_zeros(d);
     for (int i = 0; i <= f->deg; i++)
@@ -751,11 +748,11 @@ array poly_fft(const poly f, int d)
 
 void poly_inv_fft(poly rop, array eval, int d)
 {
-	if (d > n && n % d != 0)
-	{
-		fprintf(stderr, "There is no %d-th root of unity!\n", d);
-		exit(EXIT_FAILURE);
-	}
+    if (d > n && n % d != 0)
+    {
+        fprintf(stderr, "There is no %d-th root of unity!\n", d);
+        exit(EXIT_FAILURE);
+    }
     array f_coeffs = array_inv_fft(eval, d);
     int deg = d - 1;
     while (deg >= 0 && f_coeffs[deg] == 0)
@@ -776,11 +773,14 @@ void poly_inv_fft(poly rop, array eval, int d)
 
 /******************************************************/
 
+// Make sure that the use of poly_fast_mul does not
+// increase the complexity of the algorithms that use it
+// instead of poly_mul.
 bool fast_mul_usefull(int deg1, int deg2)
 {
-	if (deg1 < 2 || deg2 < 2)
-		return false;
-	long long int dn = deg1;
+    if (deg1 < 2 || deg2 < 2)
+        return false;
+    long long int dn = deg1;
     long long int dm = deg2;
     long long int logn = 1;
     long long int dlogn = 2;
@@ -789,7 +789,7 @@ bool fast_mul_usefull(int deg1, int deg2)
         logn++;
         dlogn <<= 1;
     }
-	return (dn * logn) < (dn * dm);
+    return (dn * logn) < (dn * dm);
 }
 
 void poly_fast_mul(poly rop, const poly op1, const poly op2)
@@ -798,10 +798,10 @@ void poly_fast_mul(poly rop, const poly op1, const poly op2)
     {
         poly_clear(rop);
     }
-	else if (!fast_mul_usefull(op1->deg, op2->deg))
-	{
-		poly_mul(rop, op1, op2);
-	}
+    else if (!fast_mul_usefull(op1->deg, op2->deg))
+    {
+        poly_mul(rop, op1, op2);
+    }
     else
     {
         int d = 1;
@@ -809,67 +809,70 @@ void poly_fast_mul(poly rop, const poly op1, const poly op2)
             d *= 2;
         if (d == 2 * n)
         {
-			int d11 = op1->deg / 2;
-			int d12 = (op1->deg - 1) / 2;
-			int d21 = op2->deg / 2;
-			int d22 = (op2->deg - 1) / 2;
-			int x11 = d11 + 1;
-			int x21 = d21 + 1;
-			while (d11 >= 0 && op1->coeffs[d11] == 0)
-				d11--;
-			while (d21 >= 0 && op2->coeffs[d21] == 0)
-				d21--;
+            int d11 = op1->deg / 2;
+            int d12 = (op1->deg - 1) / 2;
+            int d21 = op2->deg / 2;
+            int d22 = (op2->deg - 1) / 2;
+            int x11 = d11 + 1;
+            int x21 = d21 + 1;
+            while (d11 >= 0 && op1->coeffs[d11] == 0)
+                d11--;
+            while (d21 >= 0 && op2->coeffs[d21] == 0)
+                d21--;
             poly op11 = poly_new_deg(d11);
-			poly op12 = poly_new_deg(d12);
+            poly op12 = poly_new_deg(d12);
             poly op21 = poly_new_deg(d21);
-			poly op22 = poly_new_deg(d22);
-			for (int i = 0; i <= d11; i++)
-				op11->coeffs[i] = op1->coeffs[i];
-			for (int i = x11; i - x11 <= d12; i++)
-				op12->coeffs[i - x11] = op1->coeffs[i];
-			for (int i = 0; i <= d21; i++)
-				op21->coeffs[i] = op2->coeffs[i];
-			for (int i = x21; i - x21 <= d22; i++)
-				op22->coeffs[i - x21] = op2->coeffs[i];
-			poly op11op21 = poly_new();
-			poly op11op22 = poly_new();
-			poly op12op21 = poly_new();
-			poly op12op22 = poly_new();
-			poly_fast_mul(op11op21, op11, op21);
-			poly_fast_mul(op11op22, op11, op22);
-			poly_fast_mul(op12op21, op12, op21);
-			poly_fast_mul(op12op22, op12, op22);
-			poly_set_deg(rop, op1->deg + op2->deg);
-			for (int i = 0; i <= op1->deg + op2->deg; i++)
-			{
-				int coeff = 0;
-				if (i <= d11 + d21)
-					coeff = zp_add(coeff, op11op21->coeffs[i]);
-				if (x21 <= i && i - x21 <= d11 + d22)
-					coeff = zp_add(coeff, op11op22->coeffs[i - x21]);
-				if (x11 <= i && i - x11 <= d12 + d21)
-					coeff = zp_add(coeff, op12op21->coeffs[i - x11]);
-				if (x11 + x21 <= i && i - x11 - x21 <= d12 + d22)
-					coeff = zp_add(coeff, op12op22->coeffs[i - x11 - x21]);
-				rop->coeffs[i] = coeff;
-			}
-			poly_free_multi(8, op11, op12, op21, op22, op11op21, op11op22, op12op21, op12op22);
-		}
-		else
-		{
-			array eval_op1 = poly_fft(op1, d);
-			array eval_op2 = poly_fft(op2, d);
-			array eval_rop = array_new(d);
-			for (int i = 0; i < d; i++)
-				eval_rop[i] = zp_mul(eval_op1[i], eval_op2[i]);
-			poly_inv_fft(rop, eval_rop, d);
-			array_free(eval_op1);
-			array_free(eval_op2);
-			array_free(eval_rop);
-		}
+            poly op22 = poly_new_deg(d22);
+            for (int i = 0; i <= d11; i++)
+                op11->coeffs[i] = op1->coeffs[i];
+            for (int i = x11; i - x11 <= d12; i++)
+                op12->coeffs[i - x11] = op1->coeffs[i];
+            for (int i = 0; i <= d21; i++)
+                op21->coeffs[i] = op2->coeffs[i];
+            for (int i = x21; i - x21 <= d22; i++)
+                op22->coeffs[i - x21] = op2->coeffs[i];
+            poly op11op21 = poly_new();
+            poly op11op22 = poly_new();
+            poly op12op21 = poly_new();
+            poly op12op22 = poly_new();
+            poly_fast_mul(op11op21, op11, op21);
+            poly_fast_mul(op11op22, op11, op22);
+            poly_fast_mul(op12op21, op12, op21);
+            poly_fast_mul(op12op22, op12, op22);
+            poly_set_deg(rop, op1->deg + op2->deg);
+            for (int i = 0; i <= op1->deg + op2->deg; i++)
+            {
+                zp_t coeff = 0;
+                if (i <= d11 + d21)
+                    coeff = zp_add(coeff, op11op21->coeffs[i]);
+                if (x21 <= i && i - x21 <= d11 + d22)
+                    coeff = zp_add(coeff, op11op22->coeffs[i - x21]);
+                if (x11 <= i && i - x11 <= d12 + d21)
+                    coeff = zp_add(coeff, op12op21->coeffs[i - x11]);
+                if (x11 + x21 <= i && i - x11 - x21 <= d12 + d22)
+                    coeff = zp_add(coeff, op12op22->coeffs[i - x11 - x21]);
+                rop->coeffs[i] = coeff;
+            }
+            poly_free_multi(8, op11, op12, op21, op22, op11op21, op11op22, op12op21, op12op22);
+        }
+        else
+        {
+            array eval_op1 = poly_fft(op1, d);
+            array eval_op2 = poly_fft(op2, d);
+            array eval_rop = array_new(d);
+            for (int i = 0; i < d; i++)
+                eval_rop[i] = zp_mul(eval_op1[i], eval_op2[i]);
+            poly_inv_fft(rop, eval_rop, d);
+            array_free(eval_op1);
+            array_free(eval_op2);
+            array_free(eval_rop);
+        }
     }
 }
 
+// Make sure that the use of poly_fast_euc_div does not
+// increase the complexity of the algorithms that use it
+// instead of poly_euc_div.
 bool fast_euc_div_useful(int deg1, int deg2)
 {
     long long int dn = deg1;
@@ -926,10 +929,12 @@ void poly_fast_euc_div(poly quo, poly rem, const poly op1, const poly op2)
         }
         array_free(coeffs_rem);
     }
-	else
+    else
         poly_euc_div(quo, rem, op1, op2);
 }
 
+// return the matrix of half gcd of r0 and r1.
+// we must have deg(r0) > deg(r1).
 poly *poly_half_gcd(const poly r0, const poly r1)
 {
     // r0 = R0, r1 = R1
@@ -1050,6 +1055,11 @@ poly *poly_half_gcd(const poly r0, const poly r1)
     return mdpgcd;
 }
 
+// return the gcd matrix M of r0 and r1.
+// we must have deg(r0) > deg(r1).
+// M is such that:
+// M[0] * r0 + M[1] * r1 = gcd(r0, r1)
+// M[2] * r0 + M[3] * r1 = 0
 poly *poly_fast_gcd_matrix(const poly r0, const poly r1)
 {
     // r0 = R0, r1 = R1
@@ -1179,6 +1189,7 @@ void poly_fast_xgcd(poly d, poly u, poly v, const poly op1, const poly op2)
     }
 }
 
+// Same as poly_fast_gcd_matrix with a limit.
 poly *poly_fast_gcd_partial_matrix(const poly r0, const poly r1, int limit)
 {
     if ((r0->deg + 1) / 2 > limit)

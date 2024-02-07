@@ -12,7 +12,7 @@
 int p = 193;
 int q = 0;
 int n = 0;
-int omega = 0;
+zp_t omega = 0;
 array omegas = NULL;
 array inverses = NULL;
 
@@ -37,17 +37,6 @@ bool test_copy(void)
     poly_copy(g, f);
     assert(poly_equal(f, g));
     poly_free_multi(2, f, g);
-    return true;
-}
-
-bool test_rev(void)
-{
-    poly f = poly_new_str("4*x^4 + 2*x^2");
-    poly rev = poly_new_str("2*x^2 + 4");
-    poly test_rev = poly_new();
-    poly_rev(test_rev, f);
-    assert(poly_equal(rev, test_rev));
-    poly_free_multi(3, f, rev, test_rev);
     return true;
 }
 
@@ -89,7 +78,7 @@ bool test_mul(void)
 bool test_mul_scalar(void)
 {
     poly f = poly_new_str("3*x^5 + 3*x^4 + 7*x^3 + 4*x^2 + 4*x");
-    int a = 23;
+    zp_t a = 23;
     poly prod = poly_new_str("69*x^5 + 69*x^4 + 161*x^3 + 92*x^2 + 92*x");
     poly test_prod = poly_new();
     poly_mul_scalar(test_prod, a, f);
@@ -101,7 +90,9 @@ bool test_mul_scalar(void)
 bool test_euc_div(void)
 {
     poly f = poly_new_rand(6);
+    poly_print(f);
     poly g = poly_new_rand(3);
+    poly_print(g);
     poly q = poly_new();
     poly r = poly_new();
     poly_euc_div(q, r, f, g);
@@ -278,8 +269,6 @@ int main(int argc, char *argv[])
         ok = test_mul();
     else if (strcmp("copy", argv[1]) == 0)
         ok = test_copy();
-    else if (strcmp("rev", argv[1]) == 0)
-        ok = test_rev();
     else if (strcmp("deriv", argv[1]) == 0)
         ok = test_deriv();
     else if (strcmp("mul_scalar", argv[1]) == 0)
@@ -310,7 +299,6 @@ int main(int argc, char *argv[])
         ok &= test_add();
         ok &= test_mul();
         ok &= test_copy();
-        ok &= test_rev();
         ok &= test_deriv();
         ok &= test_mul_scalar();
         ok &= test_euc_div();

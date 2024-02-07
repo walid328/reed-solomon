@@ -13,7 +13,7 @@
 int p = 0;
 int q = 0;
 int n = 0;
-int omega = 0;
+zp_t omega = 0;
 array omegas = NULL;
 array inverses = NULL;
 
@@ -30,7 +30,7 @@ bool comp_gcd(int qqt);
 int main(void)
 {
 	field_settings_set(193);
-	
+
 	bool bon;
 	bon = comp_dft(3);
 	printf("%d comp_dft fait %d\n", bon, bon);
@@ -42,7 +42,7 @@ int main(void)
 	printf("%d comp_euc_div fait %d\n", bon, bon);
 	bon = comp_gcd(5);
 	printf("%d comp_gcd fait %d\n", bon, bon);
-	
+
 	field_settings_free();
 	printf("fait\n");
 	return EXIT_SUCCESS;
@@ -204,9 +204,9 @@ bool comp_euc_div(int qqt)
 bool comp_gcd(int qqt)
 {
 	bool bon = true;
-	for (int dega = -1; dega < n; dega++)
+	for (int dega = -1; dega <= n; dega++)
 	{
-		for (int degb = -1; degb < n; degb++)
+		for (int degb = -1; degb <= n; degb++)
 		{
 			if (dega != -1 || degb != -1)
 			{
@@ -221,8 +221,6 @@ bool comp_gcd(int qqt)
 					poly u2 = poly_new();
 					poly v2 = poly_new();
 					poly_xgcd(d1, u1, v1, pa, pb);
-					//poly_xgcd(d2, u2, v2, pa, pb);
-					//poly_fast_xgcd(d1, u1, v1, pa, pb);
 					poly_fast_xgcd(d2, u2, v2, pa, pb);
 					if (poly_leading_coeff(d1) == 0 || poly_leading_coeff(d2) == 0)
 					{

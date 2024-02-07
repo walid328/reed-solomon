@@ -13,7 +13,7 @@
 int p = 0;
 int q = 0;
 int n = 0;
-int omega = 0;
+zp_t omega = 0;
 array omegas = NULL;
 array inverses = NULL;
 
@@ -27,11 +27,11 @@ void usage(int argc, char *argv[])
 // using RS(n,k) with fast operations.
 void encode(int argc, char *argv[])
 {
-    int block_length = atoi(argv[3]);
-    int message_length = atoi(argv[4]);
+    unsigned int block_length = strtoul(argv[3], NULL, 10);
+    unsigned int message_length = strtoul(argv[4], NULL, 10);
     array message = array_new(message_length);
     for (int i = 0; i < message_length; i++)
-        message[i] = atoi(argv[5 + i]);
+        message[i] = strtoul(argv[5 + i], NULL, 10);
     array codeword = rs_fast_encode(block_length, message_length, message);
     printf("The codeword is:\n");
     array_print(codeword, block_length);
@@ -43,11 +43,11 @@ void encode(int argc, char *argv[])
 // using RS(n,k) with fast operations.
 void decode(int argc, char *argv[])
 {
-    int block_length = atoi(argv[3]);
-    int message_length = atoi(argv[4]);
+    unsigned int block_length = strtoul(argv[3], NULL, 10);
+    unsigned int message_length = strtoul(argv[4], NULL, 10);
     array received = array_new(block_length);
     for (int i = 0; i < block_length; i++)
-        received[i] = atoi(argv[5 + i]);
+        received[i] = strtoul(argv[5 + i], NULL, 10);
     array message = rs_fast_decode(block_length, message_length, received);
     printf("The message is:\n");
     array_print(message, message_length);

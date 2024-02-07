@@ -1,6 +1,7 @@
 #ifndef FIELD_SETTINGS_H
 #define FIELD_SETTINGS_H
 
+#include "finite_field.h"
 #include "array.h"
 
 // p is the size of the field.
@@ -13,7 +14,7 @@
 extern int p;
 extern int q;
 extern int n;
-extern int omega;
+extern zp_t omega;
 extern array omegas;
 extern array inverses;
 

@@ -3,41 +3,40 @@
 
 // Basic operations in Z/pZ.
 
-// Compute a mod p.
-int zp_mod(int a);
+typedef unsigned int zp_t;
 
 // Compute a + b mod p.
-int zp_add(int a, int b);
+zp_t zp_add(zp_t a, zp_t b);
 
 // Compute a - b mod p.
-int zp_sub(int a, int b);
+zp_t zp_sub(zp_t a, zp_t b);
 
 // Compute -a mod p.
-int zp_opp(int a);
+zp_t zp_opp(zp_t a);
 
 // Compute a*b mod p.
-int zp_mul(int a, int b);
+zp_t zp_mul(zp_t a, zp_t b);
 
 // Compute a^(-1) mod p via xgcd.
-int zp_inv_xgcd(int a);
+zp_t zp_inv_xgcd(zp_t a);
 
 // Return a^(-1) mod p via precomputed table.
-int zp_inv(int a);
+zp_t zp_inv(zp_t a);
 
 // Return a random element of Z/pZ.
-int zp_rand();
+zp_t zp_rand();
 
 // Compute base^exp mod p using modular exponentiation.
-int zp_exp(int base, int exp);
+zp_t zp_exp(zp_t base, zp_t exp);
 
 // Return a n^th primitive root of unity in Z/pZ.
 // We should have p = nq + 1 where n is a power of 2,
 // and q is odd.
-int zp_prim_root();
+zp_t zp_prim_root();
 
 // Return the smallest n^th primitive root of unity in Z/pZ.
 // We should have p = nq + 1 where n is a power of 2,
 // and q is odd.
-int zp_prim_root_min();
+zp_t zp_prim_root_min();
 
 #endif

@@ -3,7 +3,9 @@
 
 #include <stdbool.h>
 
-typedef int *array;
+#include "finite_field.h"
+
+typedef zp_t *array;
 
 // Some operations on arrays of int.
 
@@ -27,6 +29,7 @@ array array_new_zeros(int tab_size);
 // Combine array_new and array_set.
 array array_new_set(int tab_size, ...);
 
+// Same as array_new but fill it with random zp_t.
 array array_new_rand(int tab_size);
 
 /******************************************************/
@@ -49,18 +52,6 @@ bool array_equal(array tab1, array tab2, int tab_size);
 
 // Add random errors on a given array.
 void array_add_errors(array tab, int tab_size, int number_errors);
-
-/******************************************************/
-
-/* Split and merge */
-
-// Split an array with even an even number of int
-// by even and odd indexes.
-void array_split(array *even, array *odd, array tab, int tab_size);
-
-// Merge two arrays into one. Even contains int of
-// even indexes and odd containts int of odd indexes.
-array array_merge(array even, array odd, int subtab_size);
 
 /******************************************************/
 

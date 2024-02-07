@@ -7,7 +7,7 @@
 #include "array.h"
 #include "polynomial.h"
 
-array rs_encode(int block_length, int message_length, array points, array message)
+array rs_encode(unsigned int block_length, unsigned int message_length, array points, array message)
 {
     poly f = poly_new();
     poly_set(f, message_length - 1, message);
@@ -17,7 +17,7 @@ array rs_encode(int block_length, int message_length, array points, array messag
     return codeword;
 }
 
-array rs_encode_2(int block_length, int message_length, array message)
+array rs_encode_2(unsigned int block_length, unsigned int message_length, array message)
 {
     poly f = poly_new();
     poly_set(f, message_length - 1, message);
@@ -27,7 +27,7 @@ array rs_encode_2(int block_length, int message_length, array message)
     return codeword;
 }
 
-array rs_fast_encode(int block_length, int message_length, array message)
+array rs_fast_encode(unsigned int block_length, unsigned int message_length, array message)
 {
     poly f = poly_new();
     poly_set(f, message_length - 1, message);
@@ -39,7 +39,7 @@ array rs_fast_encode(int block_length, int message_length, array message)
 
 /******************************************************/
 
-array rs_decode(int block_length, int message_length, array points, array received)
+array rs_decode(unsigned int block_length, unsigned int message_length, array points, array received)
 {
     poly g_0 = poly_new_set(0, 1);
     for (int i = 0; i < block_length; i++)
@@ -74,7 +74,7 @@ array rs_decode(int block_length, int message_length, array points, array receiv
     }
 }
 
-array rs_decode_2(int block_length, int message_length, array received)
+array rs_decode_2(unsigned int block_length, unsigned int message_length, array received)
 {
     poly g_0 = poly_new_set(0, 1);
     for (int i = 0; i < block_length; i++)
@@ -109,7 +109,7 @@ array rs_decode_2(int block_length, int message_length, array received)
     }
 }
 
-array rs_fast_decode(int block_length, int message_length, array received)
+array rs_fast_decode(unsigned int block_length, unsigned int message_length, array received)
 {
     poly g_0 = poly_new_set(0, 1);
     for (int i = 0; i < block_length; i++)

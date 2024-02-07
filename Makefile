@@ -22,7 +22,6 @@ test:
 	./build/test_polynomial "add"
 	./build/test_polynomial "mul"
 	./build/test_polynomial "copy"
-	./build/test_polynomial "rev"
 	./build/test_polynomial "deriv"
 	./build/test_polynomial "mul_scalar"
 	./build/test_polynomial "euc_div"

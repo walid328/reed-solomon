@@ -5,7 +5,6 @@
 
 #include "array.h"
 #include "field_settings.h"
-#include "finite_field.h"
 
 /******************************************************/
 
@@ -20,14 +19,14 @@ void array_print(array tab, int tab_size)
 
 array array_new(int tab_size)
 {
-    array tab = (array)malloc(tab_size * sizeof(int));
+    array tab = (array)malloc(tab_size * sizeof(zp_t));
     assert(tab);
     return tab;
 }
 
 array array_new_zeros(int tab_size)
 {
-    array tab = (array)calloc(tab_size, sizeof(int));
+    array tab = (array)calloc(tab_size, sizeof(zp_t));
     assert(tab);
     return tab;
 }
@@ -38,7 +37,7 @@ array array_new_set(int tab_size, ...)
     va_list valist;
     va_start(valist, tab_size);
     for (int i = 0; i < tab_size; i++)
-        tab[i] = va_arg(valist, int);
+        tab[i] = va_arg(valist, zp_t);
     va_end(valist);
     return tab;
 }
@@ -65,7 +64,7 @@ void array_set(array tab, int tab_size, ...)
     va_list valist;
     va_start(valist, tab_size);
     for (int i = 0; i < tab_size; i++)
-        tab[i] = va_arg(valist, int);
+        tab[i] = va_arg(valist, zp_t);
     va_end(valist);
 }
 
@@ -88,6 +87,10 @@ void array_add_errors(array tab, int tab_size, int number_errors)
 
 /******************************************************/
 
+/* Split and merge */
+
+// Split an array with even an even number of int
+// by even and odd indexes.
 void array_split(array *even, array *odd, array tab, int tab_size)
 {
     *even = array_new(tab_size / 2);
@@ -99,6 +102,8 @@ void array_split(array *even, array *odd, array tab, int tab_size)
     }
 }
 
+// Merge two arrays into one. Even contains int of
+// even indexes and odd containts int of odd indexes.
 array array_merge(array even, array odd, int subtab_size)
 {
     array tab = array_new(2 * subtab_size);
@@ -170,37 +175,37 @@ array array_inv_fft(array eval, int d)
 
 array formal_serie_mul(array P, array Q, int d)
 {
-	if (d == 2 * n)
-	{
-		array P0 = array_new_zeros(n);
-		array P1 = array_new_zeros(n);
-		array Q0 = array_new_zeros(n);
-		array Q1 = array_new_zeros(n);
-		for (int i = 0; i < n / 2; i++)
-			P0[i] = P[i];
-		for (int i = n / 2; i < n; i++)
-			P1[i - n / 2] = P[i];
-		for (int i = 0; i < n / 2; i++)
-			Q0[i] = Q[i];
-		for (int i = n / 2; i < n; i++)
-			Q1[i - n / 2] = Q[i];
-		array P0Q0 = formal_serie_mul(P0, Q0, n);
-		array P0Q1 = formal_serie_mul(P0, Q1, n);
-		array P1Q0 = formal_serie_mul(P1, Q0, n);
-		array res = array_new_zeros(d);
-		for (int i = 0; i < n / 2; i++)
-			res[i] = P0Q0[i];
-		for (int i = n / 2; i < n; i++)
-			res[i] = zp_add(P0Q0[i], zp_add(P0Q1[i - n / 2], P1Q0[i - n / 2]));
-		array_free(P0);
-		array_free(P1);
-		array_free(Q0);
-		array_free(Q1);
-		array_free(P0Q0);
-		array_free(P0Q1);
-		array_free(P1Q0);
-		return res;
-	}
+    if (d == 2 * n)
+    {
+        array P0 = array_new_zeros(n);
+        array P1 = array_new_zeros(n);
+        array Q0 = array_new_zeros(n);
+        array Q1 = array_new_zeros(n);
+        for (int i = 0; i < n / 2; i++)
+            P0[i] = P[i];
+        for (int i = n / 2; i < n; i++)
+            P1[i - n / 2] = P[i];
+        for (int i = 0; i < n / 2; i++)
+            Q0[i] = Q[i];
+        for (int i = n / 2; i < n; i++)
+            Q1[i - n / 2] = Q[i];
+        array P0Q0 = formal_serie_mul(P0, Q0, n);
+        array P0Q1 = formal_serie_mul(P0, Q1, n);
+        array P1Q0 = formal_serie_mul(P1, Q0, n);
+        array res = array_new_zeros(d);
+        for (int i = 0; i < n / 2; i++)
+            res[i] = P0Q0[i];
+        for (int i = n / 2; i < n; i++)
+            res[i] = zp_add(P0Q0[i], zp_add(P0Q1[i - n / 2], P1Q0[i - n / 2]));
+        array_free(P0);
+        array_free(P1);
+        array_free(Q0);
+        array_free(Q1);
+        array_free(P0Q0);
+        array_free(P0Q1);
+        array_free(P1Q0);
+        return res;
+    }
     array eval_P = array_fft(P, d);
     array eval_Q = array_fft(Q, d);
     array eval_res = array_new(d);
@@ -229,9 +234,9 @@ array formal_serie_inv(array P, int d)
     array P_2d = array_new_zeros(2 * d);
     for (int i = 0; i < d; i++)
         P_2d[i] = P[i];
-	array Qa_2d = array_new_zeros(2 * d);
-	for (int i = 0; i < d; i++)
-		Qa_2d[i] = Qa[i];
+    array Qa_2d = array_new_zeros(2 * d);
+    for (int i = 0; i < d; i++)
+        Qa_2d[i] = Qa[i];
     array Qa2 = formal_serie_mul(P_2d, Qa_2d, 2 * d);
     array Q = array_new_zeros(d);
     for (int i = 0; i < d / 2; i++)
@@ -264,9 +269,9 @@ void formal_serie_fast_euc_div(array *quo, array *rem, array P, int deg_p, array
     for (int i = 0; (i < (deg_p - deg_d + 1)) && (i < (deg_d + 1)); i++)
         D_prime[i] = D[deg_d - i];
     array D_prime_prime = formal_serie_inv(D_prime, dnmm);
-	array D_prime_prime_2dnmm = array_new_zeros(2 * dnmm);
-	for (int i = 0; i < dnmm; i++)
-		D_prime_prime_2dnmm[i] = D_prime_prime[i];
+    array D_prime_prime_2dnmm = array_new_zeros(2 * dnmm);
+    for (int i = 0; i < dnmm; i++)
+        D_prime_prime_2dnmm[i] = D_prime_prime[i];
     array Q_prime = formal_serie_mul(P_prime, D_prime_prime_2dnmm, 2 * dnmm);
     *quo = array_new(deg_p - deg_d + 1);
     for (int i = 0; i < deg_p - deg_d + 1; i++)

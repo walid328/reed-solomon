@@ -4,48 +4,43 @@
 #include "finite_field.h"
 #include "field_settings.h"
 
-int zp_mod(int a)
+zp_t zp_add(zp_t a, zp_t b)
 {
-    int b = a % p;
-    return b >= 0 ? b : b + p;
+    zp_t sum = a + b;
+    if (sum >= p)
+        return sum - p;
+    return sum;
 }
 
-int zp_add(int a, int b)
+zp_t zp_sub(zp_t a, zp_t b)
 {
-	int sum = a + b;
-	if (sum >= p)
-		return sum - p;
-	return sum;
-}
-
-int zp_sub(int a, int b)
-{
-	if (b > a)
-		return (a + p) - b;
+    if (b > a)
+        return (a + p) - b;
     return a - b;
 }
 
-int zp_opp(int a)
+zp_t zp_opp(zp_t a)
 {
-	if (a == 0)
-		return 0;
-	return p - a;
+    if (a == 0)
+        return 0;
+    return p - a;
 }
 
-int zp_mul(int a, int b)
+zp_t zp_mul(zp_t a, zp_t b)
 {
-    long long int al = a;
-    long long int bl = b;
-    int ab = (al * bl) % p;
+    unsigned long long int al = a;
+    unsigned long long int bl = b;
+    zp_t ab = (al * bl) % p;
     return ab;
 }
 
-int zp_rand(void)
+zp_t zp_rand(void)
 {
-    return zp_mod((rand() << 24) ^ (rand() << 16) ^ (rand() << 8) ^ rand());
+    zp_t r = (rand() << 24) ^ (rand() << 16) ^ (rand() << 8) ^ rand();
+    return r % p;
 }
 
-int zp_inv_xgcd(int a)
+zp_t zp_inv_xgcd(zp_t a)
 {
     if (a == 0)
     {
@@ -72,14 +67,14 @@ int zp_inv_xgcd(int a)
     return v1;
 }
 
-int zp_inv(int a)
+zp_t zp_inv(zp_t a)
 {
-	return inverses[a];
+    return inverses[a];
 }
 
-int zp_exp(int base, int exp)
+zp_t zp_exp(zp_t base, zp_t exp)
 {
-    int res = 1;
+    zp_t res = 1;
     while (exp > 0)
     {
         if (exp & 1)
@@ -90,9 +85,9 @@ int zp_exp(int base, int exp)
     return res;
 }
 
-int zp_prim_root(void)
+zp_t zp_prim_root(void)
 {
-    int x, g;
+    zp_t x, g;
     do
     {
         x = zp_rand();
@@ -101,11 +96,11 @@ int zp_prim_root(void)
     return g;
 }
 
-int zp_prim_root_min(void)
+zp_t zp_prim_root_min(void)
 {
     if (n == 1)
         return 1;
-    int g = 2;
+    zp_t g = 2;
     while (zp_exp(g, n / 2) != p - 1)
         g++;
     return g;

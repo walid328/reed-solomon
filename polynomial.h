@@ -4,6 +4,7 @@
 #include <stdbool.h>
 
 #include "array.h"
+#include "finite_field.h"
 
 // Basic implementation of Fp[x].
 
@@ -19,7 +20,8 @@ int poly_deg(const poly f);
 // Return the array of coefficients of f.
 array poly_coeffs(const poly f);
 
-int poly_leading_coeff(const poly f);
+// Return the leading coefficient of f.
+zp_t poly_leading_coeff(const poly f);
 
 // Set the polynomial f with the given values.
 // coeffs should be manually allocated (with
@@ -96,11 +98,6 @@ void poly_set_deg(poly f, int deg);
 // Clear f and set it like in poly_new_set.
 void poly_set_coeffs(poly f, int deg, ...);
 
-// Put the reverse of a given polynomial in rop.
-// For instance with "x^3 + 4x^2 + 7" will
-// return "7x^3 + 4x + 1".
-void poly_rev(poly rop, const poly f);
-
 // Compute the derivate polynomial of op and store it in rop.
 void poly_deriv(poly rop, const poly op);
 
@@ -118,7 +115,7 @@ void poly_sub(poly rop, const poly op1, const poly op2);
 void poly_mul(poly rop, const poly op1, const poly op2);
 
 // Compute op1 * op2 and store it in rop.
-void poly_mul_scalar(poly rop, int op1, const poly op2);
+void poly_mul_scalar(poly rop, zp_t op1, const poly op2);
 
 // Compute the quotient and remainder of the euclidian
 // division of op1 and op2 and store them in q and r.
@@ -181,24 +178,10 @@ void poly_fast_mul(poly rop, const poly op1, const poly op2);
 // Same as poly_euc_div with a better time complexity.
 void poly_fast_euc_div(poly q, poly r, const poly op1, const poly op2);
 
-// return the matrix of half gcd of r0 and r1.
-// we must have deg(r0) > deg(r1).
-poly *poly_half_gcd(const poly r0, const poly r1);
-
-// return the gcd matrix M of r0 and r1.
-// we must have deg(r0) > deg(r1).
-// M is such that:
-// M[0] * r0 + M[1] * r1 = gcd(r0, r1)
-// M[2] * r0 + M[3] * r1 = 0
-poly *poly_fast_gcd_matrix(const poly r0, const poly r1);
-
-// compute d, u and v such that d = gcd(op1, op2)
-// and u * op1 + v * op2 = d
-// it does it with a better time complexity than poly_xgcd.
+// Same as poly_xgcd with a better time complexity.
 void poly_fast_xgcd(poly d, poly u, poly v, const poly op1, const poly op2);
 
-poly *poly_fast_gcd_partial_matrix(const poly r0, const poly r1, int limit);
-
+// Same as poly_xgcd_partial with a better time complexity.
 void poly_fast_xgcd_partial(poly d, poly u, poly v, const poly op1, const poly op2, int limit);
 
 #endif
