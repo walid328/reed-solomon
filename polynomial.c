@@ -776,27 +776,119 @@ void poly_inv_fft(poly rop, array eval, int d)
 
 /******************************************************/
 
+bool fast_mul_usefull(int deg1, int deg2)
+{
+	if (deg1 < 2 || deg2 < 2)
+		return false;
+	long long int dn = deg1;
+    long long int dm = deg2;
+    long long int logn = 1;
+    long long int dlogn = 2;
+    while (dlogn < dn)
+    {
+        logn++;
+        dlogn <<= 1;
+    }
+	return (dn * logn) < (dn * dm);
+}
+
 void poly_fast_mul(poly rop, const poly op1, const poly op2)
 {
     if (poly_is_zero(op1) || poly_is_zero(op2))
     {
         poly_clear(rop);
     }
+	else if (!fast_mul_usefull(op1->deg, op2->deg))
+	{
+		poly_mul(rop, op1, op2);
+	}
     else
     {
         int d = 1;
         while (d < op1->deg + op2->deg + 1)
             d *= 2;
-        array eval_op1 = poly_fft(op1, d);
-        array eval_op2 = poly_fft(op2, d);
-        array eval_rop = array_new(d);
-        for (int i = 0; i < d; i++)
-            eval_rop[i] = zp_mul(eval_op1[i], eval_op2[i]);
-        poly_inv_fft(rop, eval_rop, d);
-        array_free(eval_op1);
-        array_free(eval_op2);
-        array_free(eval_rop);
+        if (d == 2 * n)
+        {
+			int d11 = op1->deg / 2;
+			int d12 = (op1->deg - 1) / 2;
+			int d21 = op2->deg / 2;
+			int d22 = (op2->deg - 1) / 2;
+			int x11 = d11 + 1;
+			int x21 = d21 + 1;
+			while (d11 >= 0 && op1->coeffs[d11] == 0)
+				d11--;
+			while (d21 >= 0 && op2->coeffs[d21] == 0)
+				d21--;
+            poly op11 = poly_new_deg(d11);
+			poly op12 = poly_new_deg(d12);
+            poly op21 = poly_new_deg(d21);
+			poly op22 = poly_new_deg(d22);
+			for (int i = 0; i <= d11; i++)
+				op11->coeffs[i] = op1->coeffs[i];
+			for (int i = x11; i - x11 <= d12; i++)
+				op12->coeffs[i - x11] = op1->coeffs[i];
+			for (int i = 0; i <= d21; i++)
+				op21->coeffs[i] = op2->coeffs[i];
+			for (int i = x21; i - x21 <= d22; i++)
+				op22->coeffs[i - x21] = op2->coeffs[i];
+			poly op11op21 = poly_new();
+			poly op11op22 = poly_new();
+			poly op12op21 = poly_new();
+			poly op12op22 = poly_new();
+			poly_fast_mul(op11op21, op11, op21);
+			poly_fast_mul(op11op22, op11, op22);
+			poly_fast_mul(op12op21, op12, op21);
+			poly_fast_mul(op12op22, op12, op22);
+			poly_set_deg(rop, op1->deg + op2->deg);
+			for (int i = 0; i <= op1->deg + op2->deg; i++)
+			{
+				int coeff = 0;
+				if (i <= d11 + d21)
+					coeff = zp_add(coeff, op11op21->coeffs[i]);
+				if (x21 <= i && i - x21 <= d11 + d22)
+					coeff = zp_add(coeff, op11op22->coeffs[i - x21]);
+				if (x11 <= i && i - x11 <= d12 + d21)
+					coeff = zp_add(coeff, op12op21->coeffs[i - x11]);
+				if (x11 + x21 <= i && i - x11 - x21 <= d12 + d22)
+					coeff = zp_add(coeff, op12op22->coeffs[i - x11 - x21]);
+				rop->coeffs[i] = coeff;
+			}
+			poly_free_multi(8, op11, op12, op21, op22, op11op21, op11op22, op12op21, op12op22);
+		}
+		else
+		{
+			array eval_op1 = poly_fft(op1, d);
+			array eval_op2 = poly_fft(op2, d);
+			array eval_rop = array_new(d);
+			for (int i = 0; i < d; i++)
+				eval_rop[i] = zp_mul(eval_op1[i], eval_op2[i]);
+			poly_inv_fft(rop, eval_rop, d);
+			array_free(eval_op1);
+			array_free(eval_op2);
+			array_free(eval_rop);
+		}
     }
+}
+
+bool fast_euc_div_useful(int deg1, int deg2)
+{
+    long long int dn = deg1;
+    long long int dm = deg2;
+    long long int logn = 1;
+    long long int dlogn = 2;
+    while (dlogn < dn)
+    {
+        logn++;
+        dlogn <<= 1;
+    }
+    long long int loglogn = 1;
+    long long int dloglogn = 2;
+    while (dloglogn < logn)
+    {
+        loglogn++;
+        dloglogn <<= 1;
+    }
+    return (dn * logn * loglogn) < (dm * (dn - dm));
 }
 
 void poly_fast_euc_div(poly quo, poly rem, const poly op1, const poly op2)
@@ -812,25 +904,30 @@ void poly_fast_euc_div(poly quo, poly rem, const poly op1, const poly op2)
         fprintf(stderr, "Can't divide by 0!\n");
         exit(EXIT_FAILURE);
     }
-    int deg_p = op1->deg;
-    int deg_d = op2->deg;
-    array coeffs_quo = NULL;
-    array coeffs_rem = NULL;
-    formal_serie_fast_euc_div(&coeffs_quo, &coeffs_rem, op1->coeffs, deg_p, op2->coeffs, deg_d);
-    poly_set(quo, deg_p - deg_d, coeffs_quo);
-    int deg_rem = deg_d - 1;
-    while (deg_rem >= 0 && coeffs_rem[deg_rem] == 0)
-        deg_rem--;
-    if (deg_rem == -1)
-        poly_set(rem, -1, NULL);
-    else
+    if (fast_euc_div_useful(op1->deg, op2->deg))
     {
-        array coeffs = array_new(deg_rem + 1);
-        for (int i = 0; i <= deg_rem; i++)
-            coeffs[i] = coeffs_rem[i];
-        poly_set(rem, deg_rem, coeffs);
+        int deg_p = op1->deg;
+        int deg_d = op2->deg;
+        array coeffs_quo = NULL;
+        array coeffs_rem = NULL;
+        formal_serie_fast_euc_div(&coeffs_quo, &coeffs_rem, op1->coeffs, deg_p, op2->coeffs, deg_d);
+        poly_set(quo, deg_p - deg_d, coeffs_quo);
+        int deg_rem = deg_d - 1;
+        while (deg_rem >= 0 && coeffs_rem[deg_rem] == 0)
+            deg_rem--;
+        if (deg_rem == -1)
+            poly_set(rem, -1, NULL);
+        else
+        {
+            array coeffs = array_new(deg_rem + 1);
+            for (int i = 0; i <= deg_rem; i++)
+                coeffs[i] = coeffs_rem[i];
+            poly_set(rem, deg_rem, coeffs);
+        }
+        array_free(coeffs_rem);
     }
-    array_free(coeffs_rem);
+	else
+        poly_euc_div(quo, rem, op1, op2);
 }
 
 poly *poly_half_gcd(const poly r0, const poly r1)
