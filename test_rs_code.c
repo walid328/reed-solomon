@@ -59,13 +59,16 @@ bool test_decode(void)
     unsigned int message_length = 3;
     array points = array_new_set(block_length, 0, 1, 2, 3, 4, 5, 6);
     array received = array_new_set(block_length, 1, 6, 123, 456, 57, 86, 121);
-    array test_message = rs_decode(block_length, message_length, points, received);
+    poly g_0 = poly_new();
+    rs_g_0(g_0, points, block_length);
+    array test_message = rs_decode(g_0, block_length, message_length, points, received);
     array message = array_new_set(message_length, 1, 2, 3);
     assert(array_equal(test_message, message, message_length));
     array_free(points);
     array_free(received);
     array_free(test_message);
     array_free(message);
+    poly_free(g_0);
     return true;
 }
 
@@ -77,12 +80,15 @@ bool test_encode_decode(void)
     array message = array_new_set(message_length, 1, 2, 3);
     array test_codeword = rs_encode(block_length, message_length, points, message);
     array_add_errors(test_codeword, block_length, (block_length - message_length + 1) / 2);
-    array test_message = rs_decode(block_length, message_length, points, test_codeword);
+    poly g_0 = poly_new();
+    rs_g_0(g_0, points, block_length);
+    array test_message = rs_decode(g_0, block_length, message_length, points, test_codeword);
     assert(array_equal(message, test_message, message_length));
     array_free(points);
     array_free(message);
     array_free(test_codeword);
     array_free(test_message);
+    poly_free(g_0);
     return true;
 }
 
@@ -92,12 +98,15 @@ bool test_encode_decode_2(void)
     unsigned int message_length = 3;
     array message = array_new_set(message_length, 1, 2, 3);
     array test_codeword = rs_encode_2(block_length, message_length, message);
-    array_add_errors(test_codeword, block_length, (block_length - message_length + 1) / 2);
-    array test_message = rs_decode_2(block_length, message_length, test_codeword);
+    array_add_errors(test_codeword, block_length, (block_length - message_length) / 2);
+    poly g_0 = poly_new();
+    rs_g_0_fourier(g_0, block_length);
+    array test_message = rs_decode_2(g_0, block_length, message_length, test_codeword);
     assert(array_equal(message, test_message, message_length));
     array_free(message);
     array_free(test_codeword);
     array_free(test_message);
+    poly_free(g_0);
     return true;
 }
 
@@ -107,12 +116,15 @@ bool test_fast_encode_decode(void)
     unsigned int message_length = 3;
     array message = array_new_set(message_length, 1, 2, 3);
     array test_codeword = rs_fast_encode(block_length, message_length, message);
-    array_add_errors(test_codeword, block_length, (block_length - message_length + 1) / 2);
-    array test_message = rs_fast_decode(block_length, message_length, test_codeword);
+    array_add_errors(test_codeword, block_length, (block_length - message_length) / 2);
+    poly g_0 = poly_new();
+    rs_g_0_fourier(g_0, block_length);
+    array test_message = rs_fast_decode(g_0, block_length, message_length, test_codeword);
     assert(array_equal(message, test_message, message_length));
     array_free(message);
     array_free(test_codeword);
     array_free(test_message);
+    poly_free(g_0);
     return true;
 }
 

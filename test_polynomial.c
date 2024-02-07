@@ -185,6 +185,7 @@ bool test_fft(void)
 
 bool test_fast_mul(void)
 {
+
     poly f = poly_new_str("x^2 + x + 1");
     poly g = poly_new_str("3*x^3 + 4*x");
     poly prod = poly_new_str("3*x^5 + 3*x^4 + 7*x^3 + 4*x^2 + 4*x");

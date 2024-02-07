@@ -48,11 +48,14 @@ void decode(int argc, char *argv[])
     array received = array_new(block_length);
     for (int i = 0; i < block_length; i++)
         received[i] = strtoul(argv[5 + i], NULL, 10);
-    array message = rs_fast_decode(block_length, message_length, received);
+    poly g_0 = poly_new();
+    rs_g_0_fourier(g_0, block_length);
+    array message = rs_fast_decode(g_0, block_length, message_length, received);
     printf("The message is:\n");
     array_print(message, message_length);
     array_free(received);
     array_free(message);
+    poly_free(g_0);
 }
 
 int main(int argc, char *argv[])

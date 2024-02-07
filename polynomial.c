@@ -621,6 +621,11 @@ void poly_xgcd(poly d, poly u, poly v, const poly op1, const poly op2)
 
 void poly_xgcd_partial(poly d, poly u, poly v, const poly op1, const poly op2, int limit)
 {
+    if (op1->deg < op2->deg)
+    {
+        poly_xgcd_partial(d, v, u, op2, op1, limit);
+        return;
+    }
     poly r0 = poly_new_copy(op1);
     poly u0 = poly_new_set(0, 1);
     poly v0 = poly_new();
@@ -646,9 +651,20 @@ void poly_xgcd_partial(poly d, poly u, poly v, const poly op1, const poly op2, i
         u1 = u2;
         v1 = v2;
     }
-    poly_copy(d, r1);
-    poly_copy(u, u1);
-    poly_copy(v, v1);
+    // By convention we choose the biggest remainder < limit
+    // and the first one in case of equality of degree.
+    if (r0->deg < limit && r0->deg >= r1->deg)
+    {
+        poly_copy(d, r0);
+        poly_copy(u, u0);
+        poly_copy(v, v0);
+    }
+    else
+    {
+        poly_copy(d, r1);
+        poly_copy(u, u1);
+        poly_copy(v, v1);
+    }
     poly_free_multi(7, r0, u0, v0, r1, u1, v1, q);
 }
 
@@ -809,6 +825,8 @@ void poly_fast_mul(poly rop, const poly op1, const poly op2)
             d *= 2;
         if (d == 2 * n)
         {
+            // we cut op1 in two parts: op11 and op12 to reduce degree.
+            // we cut op2 in two parts: op21 and op22 to reduce degree.
             int d11 = op1->deg / 2;
             int d12 = (op1->deg - 1) / 2;
             int d21 = op2->deg / 2;
@@ -843,13 +861,13 @@ void poly_fast_mul(poly rop, const poly op1, const poly op2)
             for (int i = 0; i <= op1->deg + op2->deg; i++)
             {
                 zp_t coeff = 0;
-                if (i <= d11 + d21)
+                if (i <= op11op21->deg)
                     coeff = zp_add(coeff, op11op21->coeffs[i]);
-                if (x21 <= i && i - x21 <= d11 + d22)
+                if (x21 <= i && i - x21 <= op11op22->deg)
                     coeff = zp_add(coeff, op11op22->coeffs[i - x21]);
-                if (x11 <= i && i - x11 <= d12 + d21)
+                if (x11 <= i && i - x11 <= op12op21->deg)
                     coeff = zp_add(coeff, op12op21->coeffs[i - x11]);
-                if (x11 + x21 <= i && i - x11 - x21 <= d12 + d22)
+                if (x11 + x21 <= i && i - x11 - x21 <= op12op22->deg)
                     coeff = zp_add(coeff, op12op22->coeffs[i - x11 - x21]);
                 rop->coeffs[i] = coeff;
             }
@@ -1290,12 +1308,14 @@ void poly_fast_xgcd_partial(poly d, poly u, poly v, const poly op1, const poly o
 {
     if (poly_is_zero(op1) && poly_is_zero(op2))
     {
-        fprintf(stderr, "there is no gcd of 0 and 0\n");
+        fprintf(stderr, "There is no gcd of 0 and 0!\n");
         exit(EXIT_FAILURE);
     }
     if (op1->deg < limit || op2->deg < limit)
     {
-        if (op1->deg >= op2->deg)
+        // If both op1 and op2 have degree < limit, we choose the one with the biggest degree.
+        // If one is bigger than the limit we choose the other.
+        if ((op1->deg < limit && op1->deg >= op2->deg) || (op2->deg >= limit))
         {
             poly_copy(d, op1);
             poly_set_coeffs(u, 0, 1);
@@ -1308,7 +1328,7 @@ void poly_fast_xgcd_partial(poly d, poly u, poly v, const poly op1, const poly o
             poly_set_coeffs(v, 0, 1);
         }
     }
-    if (op1->deg == op2->deg)
+    else if (op1->deg == op2->deg)
     {
         poly quo = poly_new();
         poly rem = poly_new();
