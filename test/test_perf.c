@@ -269,7 +269,7 @@ int main(void)
 	int primes[32] = {3, 7, 11, 19, 5, 13, 29, 37, 41, 73, 17, 113, 97, 193, 449, 577, 641, 1153, 257, 769, 18433, 12289, 40961, 114689, 147457, 163841, 65537, 1179649, 786433, 7340033, 167772161, 469762049};
 	// Here primes are sorted in ascending order.
 	// int primes[32] = {3, 5, 7, 11, 13, 17, 19, 29, 37, 41, 73, 97, 113, 193, 257, 449, 577, 641, 769, 1153, 12289, 18433, 40961, 65537, 114689, 147457, 163841, 786433, 1179649, 7340033, 167772161, 469762049};
-	int nb_prime = 20;
+	int nb_prime = 23;
 	int **results = (int **)malloc(nb_prime * sizeof(int *));
 	assert(results);
 	int time1 = 0;
@@ -280,7 +280,7 @@ int main(void)
 		printf("prime %d / %d, p = %d, n = %d\n", (i + 1), nb_prime, primes[i], n);
 		results[i] = (int *)malloc(10 * sizeof(int));
 		assert(results[i]);
-		int qty = 20;
+		int qty = 100;
 		comp_time_mul(qty, &time1, &time2);
 		results[i][0] = time1;
 		results[i][1] = time2;

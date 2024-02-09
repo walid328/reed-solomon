@@ -47,4 +47,4 @@ test:
 
 perf:
 	mkdir -p results_perf
-	./build/test_performances
+	./build/test_perf

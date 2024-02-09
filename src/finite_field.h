@@ -2,6 +2,7 @@
 #define FINITE_FIELD_H
 
 // Basic operations in Z/pZ.
+// Elements of Z/pZ are represented by 0, 1, ..., p-1.
 
 typedef unsigned int zp_t;
 
