@@ -93,10 +93,10 @@ bool poly_equal(const poly f, const poly g);
 void poly_copy(poly dst, const poly src);
 
 // Clear f, set his degree and allocate his array coeffs.
-void poly_set_deg(poly f, int deg);
+void poly_reset_deg(poly f, int deg);
 
 // Clear f and set it like in poly_new_set.
-void poly_set_coeffs(poly f, int deg, ...);
+void poly_reset_coeffs(poly f, int deg, ...);
 
 // Compute the derivate polynomial of op and store it in rop.
 void poly_deriv(poly rop, const poly op);

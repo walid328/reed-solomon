@@ -5,6 +5,9 @@
 
 typedef unsigned int zp_t;
 
+// Compute a mod p.
+zp_t zp_mod(int a);
+
 // Compute a + b mod p.
 zp_t zp_add(zp_t a, zp_t b);
 

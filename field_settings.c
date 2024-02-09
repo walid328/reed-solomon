@@ -27,6 +27,12 @@ void field_settings_set(int p_)
         inverses[i] = zp_inv_xgcd(i);
 }
 
+void field_settings_reset(int p_)
+{
+    field_settings_free();
+    field_settings_set(p_);
+}
+
 void field_settings_free(void)
 {
     array_free(omegas);

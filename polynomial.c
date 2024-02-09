@@ -58,10 +58,10 @@ int size_int_str(int n)
     return ret;
 }
 
-// Add a zp_t into a string.
+// Add a int into a string.
 // index indicate the end of the string.
 // For instance str_add_int("123 + ", 6, 2) -> "123 + 2", 7
-void str_add_int(char *string, int *index, zp_t n)
+void str_add_int(char *string, int *index, int n)
 {
     if (n == 0)
     {
@@ -106,11 +106,11 @@ char *str_poly_iso_length(poly f)
             poly_string[index + 2] = ' ';
             index += 3;
         }
-        int size_coeff = size_int_str(f->coeffs[i]);
+        int size_coeff = size_int_str((int)(f->coeffs[i]));
         for (int j = 0; j < size_p - size_coeff; j++)
             poly_string[index + j] = ' ';
         index += size_p - size_coeff;
-        str_add_int(poly_string, &index, f->coeffs[i]);
+        str_add_int(poly_string, &index, (int)(f->coeffs[i]));
         if (i == 1)
         {
             poly_string[index + 0] = '*';
@@ -150,7 +150,7 @@ poly poly_new(void)
 poly poly_new_deg(int deg)
 {
     poly f = poly_new();
-    poly_set_deg(f, deg);
+    poly_reset_deg(f, deg);
     return f;
 }
 
@@ -163,7 +163,7 @@ poly poly_new_set(int deg, ...)
         va_list valist;
         va_start(valist, deg);
         for (int i = 0; i <= deg; i++)
-            coeffs[i] = va_arg(valist, zp_t);
+            coeffs[i] = zp_mod(va_arg(valist, int));
         va_end(valist);
         poly_set(f, deg, coeffs);
     }
@@ -202,14 +202,13 @@ array coeffs_from_str(char *str, int *deg)
     int t = 100;
     array coeffs = array_new_zeros(t);
     int exp;
-    for (int coeff = next_coeff(str, &i); i != -10; coeff = next_coeff(str, &i))
+    for (zp_t coeff = zp_mod(next_coeff(str, &i)); i != -10; coeff = zp_mod(next_coeff(str, &i)))
     {
         while (str[i] != '\0' && str[i] != 'x' && str[i] != 'X' && str[i] != '+' && str[i] != '-')
             i++;
         if (str[i] == '\0' || str[i] == '+' || str[i] == '-')
         {
-            coeffs[0] += coeff;
-            coeffs[0] = ((coeffs[0] % p) + p) % p;
+            coeffs[0] = zp_add(coeffs[0], coeff);
             if (*deg < 0 && coeffs[0] != 0)
                 *deg = 0;
             if (*deg == 0 && coeffs[0] == 0)
@@ -234,8 +233,7 @@ array coeffs_from_str(char *str, int *deg)
                     coeffs = new_coeffs;
                     t = 2 * exp;
                 }
-                coeffs[exp] += coeff;
-                coeffs[exp] = ((coeffs[exp] % p) + p) % p;
+                coeffs[exp] = zp_add(coeffs[exp], coeff);
                 if (*deg < exp && coeffs[exp] != 0)
                     *deg = exp;
                 if (*deg == exp && coeffs[exp] == 0)
@@ -355,7 +353,7 @@ void poly_copy(poly dst, const poly src)
     poly_set(dst, deg, coeffs);
 }
 
-void poly_set_deg(poly f, int deg)
+void poly_reset_deg(poly f, int deg)
 {
     poly_clear(f);
     if (deg > -1)
@@ -365,15 +363,15 @@ void poly_set_deg(poly f, int deg)
     }
 }
 
-void poly_set_coeffs(poly f, int deg, ...)
+void poly_reset_coeffs(poly f, int deg, ...)
 {
-    poly_set_deg(f, deg);
+    poly_reset_deg(f, deg);
     if (deg > -1)
     {
         va_list valist;
         va_start(valist, deg);
         for (int i = 0; i <= deg; i++)
-            f->coeffs[i] = va_arg(valist, int);
+            f->coeffs[i] = zp_mod(va_arg(valist, int));
         va_end(valist);
     }
 }
@@ -857,7 +855,7 @@ void poly_fast_mul(poly rop, const poly op1, const poly op2)
             poly_fast_mul(op11op22, op11, op22);
             poly_fast_mul(op12op21, op12, op21);
             poly_fast_mul(op12op22, op12, op22);
-            poly_set_deg(rop, op1->deg + op2->deg);
+            poly_reset_deg(rop, op1->deg + op2->deg);
             for (int i = 0; i <= op1->deg + op2->deg; i++)
             {
                 zp_t coeff = 0;
@@ -1176,34 +1174,22 @@ void poly_fast_xgcd(poly d, poly u, poly v, const poly op1, const poly op2)
         poly_sub(u, u, qv);
         poly_free_multi(3, quo, rem, qv);
     }
+    else if (op1->deg < op2->deg)
+    {
+        poly_fast_xgcd(d, v, u, op2, op1);
+    }
     else
     {
-        if (op1->deg > op2->deg)
-        {
-            poly *mab = poly_fast_gcd_matrix(op1, op2);
-            poly prod1 = poly_new();
-            poly prod2 = poly_new();
-            poly_fast_mul(prod1, mab[0], op1);
-            poly_fast_mul(prod2, mab[1], op2);
-            poly_add(d, prod1, prod2);
-            poly_copy(u, mab[0]);
-            poly_copy(v, mab[1]);
-            poly_free_multi(6, mab[0], mab[1], mab[2], mab[3], prod1, prod2);
-            free(mab);
-        }
-        else if (op1->deg < op2->deg)
-        {
-            poly *mab = poly_fast_gcd_matrix(op2, op1);
-            poly prod1 = poly_new();
-            poly prod2 = poly_new();
-            poly_fast_mul(prod1, mab[0], op2);
-            poly_fast_mul(prod2, mab[1], op1);
-            poly_add(d, prod1, prod2);
-            poly_copy(u, mab[1]);
-            poly_copy(v, mab[0]);
-            poly_free_multi(6, mab[0], mab[1], mab[2], mab[3], prod1, prod2);
-            free(mab);
-        }
+        poly *mab = poly_fast_gcd_matrix(op1, op2);
+        poly prod1 = poly_new();
+        poly prod2 = poly_new();
+        poly_fast_mul(prod1, mab[0], op1);
+        poly_fast_mul(prod2, mab[1], op2);
+        poly_add(d, prod1, prod2);
+        poly_copy(u, mab[0]);
+        poly_copy(v, mab[1]);
+        poly_free_multi(6, mab[0], mab[1], mab[2], mab[3], prod1, prod2);
+        free(mab);
     }
 }
 
@@ -1318,14 +1304,14 @@ void poly_fast_xgcd_partial(poly d, poly u, poly v, const poly op1, const poly o
         if ((op1->deg < limit && op1->deg >= op2->deg) || (op2->deg >= limit))
         {
             poly_copy(d, op1);
-            poly_set_coeffs(u, 0, 1);
+            poly_reset_coeffs(u, 0, 1);
             poly_clear(v);
         }
         else
         {
             poly_copy(d, op2);
             poly_clear(u);
-            poly_set_coeffs(v, 0, 1);
+            poly_reset_coeffs(v, 0, 1);
         }
     }
     else if (op1->deg == op2->deg)
@@ -1339,33 +1325,21 @@ void poly_fast_xgcd_partial(poly d, poly u, poly v, const poly op1, const poly o
         poly_sub(u, u, qv);
         poly_free_multi(3, quo, rem, qv);
     }
+    else if (op1->deg < op2->deg)
+    {
+        poly_fast_xgcd_partial(d, v, u, op2, op1, limit);
+    }
     else
     {
-        if (op1->deg > op2->deg)
-        {
-            poly *mab = poly_fast_gcd_partial_matrix(op1, op2, limit);
-            poly prod1 = poly_new();
-            poly prod2 = poly_new();
-            poly_fast_mul(prod1, mab[2], op1);
-            poly_fast_mul(prod2, mab[3], op2);
-            poly_add(d, prod1, prod2);
-            poly_copy(u, mab[2]);
-            poly_copy(v, mab[3]);
-            poly_free_multi(6, mab[0], mab[1], mab[2], mab[3], prod1, prod2);
-            free(mab);
-        }
-        else if (op1->deg < op2->deg)
-        {
-            poly *mab = poly_fast_gcd_partial_matrix(op2, op1, limit);
-            poly prod1 = poly_new();
-            poly prod2 = poly_new();
-            poly_fast_mul(prod1, mab[2], op2);
-            poly_fast_mul(prod2, mab[3], op1);
-            poly_add(d, prod1, prod2);
-            poly_copy(u, mab[3]);
-            poly_copy(v, mab[2]);
-            poly_free_multi(6, mab[0], mab[1], mab[2], mab[3], prod1, prod2);
-            free(mab);
-        }
+        poly *mab = poly_fast_gcd_partial_matrix(op1, op2, limit);
+        poly prod1 = poly_new();
+        poly prod2 = poly_new();
+        poly_fast_mul(prod1, mab[2], op1);
+        poly_fast_mul(prod2, mab[3], op2);
+        poly_add(d, prod1, prod2);
+        poly_copy(u, mab[2]);
+        poly_copy(v, mab[3]);
+        poly_free_multi(6, mab[0], mab[1], mab[2], mab[3], prod1, prod2);
+        free(mab);
     }
 }

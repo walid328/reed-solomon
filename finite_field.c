@@ -4,6 +4,15 @@
 #include "finite_field.h"
 #include "field_settings.h"
 
+zp_t zp_mod(int a)
+{
+    int b = a % p;
+    if (b < 0)
+        b += p;
+    zp_t c = b;
+    return c;
+}
+
 zp_t zp_add(zp_t a, zp_t b)
 {
     zp_t sum = a + b;

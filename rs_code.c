@@ -11,7 +11,7 @@
 
 void rs_g_0(poly g_0, array points, int block_length)
 {
-    poly_set_coeffs(g_0, 0, 1);
+    poly_reset_coeffs(g_0, 0, 1);
     for (int i = 0; i < block_length; i++)
     {
         poly x_m_ai = poly_new_set(1, zp_opp(points[i]), 1);
@@ -22,7 +22,7 @@ void rs_g_0(poly g_0, array points, int block_length)
 
 void rs_g_0_fourier(poly g_0, int block_length)
 {
-    poly_set_coeffs(g_0, 0, 1);
+    poly_reset_coeffs(g_0, 0, 1);
     for (int i = 0; i < block_length; i++)
     {
         poly x_m_ai = poly_new_set(1, zp_opp(omegas[i * n / block_length]), 1);

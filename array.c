@@ -37,7 +37,7 @@ array array_new_set(int tab_size, ...)
     va_list valist;
     va_start(valist, tab_size);
     for (int i = 0; i < tab_size; i++)
-        tab[i] = va_arg(valist, zp_t);
+        tab[i] = zp_mod(va_arg(valist, int));
     va_end(valist);
     return tab;
 }
@@ -64,7 +64,7 @@ void array_set(array tab, int tab_size, ...)
     va_list valist;
     va_start(valist, tab_size);
     for (int i = 0; i < tab_size; i++)
-        tab[i] = va_arg(valist, zp_t);
+        tab[i] = zp_mod(va_arg(valist, int));
     va_end(valist);
 }
 
