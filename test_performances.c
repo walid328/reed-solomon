@@ -28,7 +28,7 @@ int time_encode(int block_length, int message_length, int qty, array *messages)
 {
 	long long start = timeInMilliseconds();
 	for (int i = 0; i < qty; i++)
-		rs_encode_2(block_length, message_length, messages[i]);
+		array_free(rs_encode_2(block_length, message_length, messages[i]));
 	return timeInMilliseconds() - start;
 }
 
@@ -36,7 +36,7 @@ int time_fast_encode(int block_length, int message_length, int qty, array *messa
 {
 	long long start = timeInMilliseconds();
 	for (int i = 0; i < qty; i++)
-		rs_fast_encode(block_length, message_length, messages[i]);
+		array_free(rs_fast_encode(block_length, message_length, messages[i]));
 	return timeInMilliseconds() - start;
 }
 
@@ -44,7 +44,7 @@ int time_decode(poly g_0, int block_length, int message_length, int qty, array *
 {
 	long long start = timeInMilliseconds();
 	for (int i = 0; i < qty; i++)
-		rs_decode_2(g_0, block_length, message_length, receiveds[i]);
+		array_free(rs_decode_2(g_0, block_length, message_length, receiveds[i]));
 	return timeInMilliseconds() - start;
 }
 
@@ -52,25 +52,25 @@ int time_fast_decode(poly g_0, int block_length, int message_length, int qty, ar
 {
 	long long start = timeInMilliseconds();
 	for (int i = 0; i < qty; i++)
-		rs_fast_decode(g_0, block_length, message_length, receiveds[i]);
+		array_free(rs_fast_decode(g_0, block_length, message_length, receiveds[i]));
 	return timeInMilliseconds() - start;
 }
 
-void comp_time_encode(int p_, int block_length, int message_length, int qty, int *time1, int *time2)
+void comp_time_encode(int block_length, int message_length, int qty, int *time1, int *time2)
 {
-	field_settings_reset(p_);
 	array *messages = (array *)malloc(qty * sizeof(array));
 	assert(messages);
 	for (int i = 0; i < qty; i++)
 		messages[i] = array_new_rand(message_length);
 	*time1 = time_encode(block_length, message_length, qty, messages);
 	*time2 = time_fast_encode(block_length, message_length, qty, messages);
+	for (int i = 0; i < qty; i++)
+		array_free(messages[i]);
 	free(messages);
 }
 
-void comp_time_decode(int p_, int block_length, int message_length, int qty, int *time1, int *time2)
+void comp_time_decode(int block_length, int message_length, int qty, int *time1, int *time2)
 {
-	field_settings_reset(p_);
 	poly g_0 = poly_new();
 	rs_g_0_fourier(g_0, block_length);
 	array *receiveds = (array *)malloc(qty * sizeof(array));
@@ -79,6 +79,8 @@ void comp_time_decode(int p_, int block_length, int message_length, int qty, int
 		receiveds[i] = rs_encode_2(block_length, message_length, array_new_rand(message_length));
 	*time1 = time_decode(g_0, block_length, message_length, qty, receiveds);
 	*time2 = time_fast_decode(g_0, block_length, message_length, qty, receiveds);
+	for (int i = 0; i < qty; i++)
+		array_free(receiveds[i]);
 	free(receiveds);
 	poly_free(g_0);
 }
@@ -147,6 +149,7 @@ int main(void)
 	int time2 = 0;
 	for (int i = 0; i < nb_prime; i++)
 	{
+		field_settings_reset(primes[i]);
 		printf("prime %d / %d, p = %d, n = %d\n", (i + 1), nb_prime, primes[i], block_lengths[i]);
 		results[i] = (int **)malloc(block_lengths[i] * sizeof(int *));
 		assert(results[i]);
@@ -155,10 +158,10 @@ int main(void)
 			printf("message_length = %d / %d\n", message_length, block_lengths[i] - 1);
 			results[i][message_length] = (int *)malloc(4 * sizeof(int));
 			assert(results[i][message_length]);
-			comp_time_encode(primes[i], block_lengths[i], message_length, 20, &time1, &time2);
+			comp_time_encode(block_lengths[i], message_length, 100, &time1, &time2);
 			results[i][message_length][0] = time1;
 			results[i][message_length][1] = time2;
-			comp_time_decode(primes[i], block_lengths[i], message_length, 20, &time1, &time2);
+			comp_time_decode(block_lengths[i], message_length, 20, &time1, &time2);
 			results[i][message_length][2] = time1;
 			results[i][message_length][3] = time2;
 			printf("\033[F\033[K");
