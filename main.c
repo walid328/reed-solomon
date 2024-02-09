@@ -2,11 +2,11 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "field_settings.h"
-#include "finite_field.h"
-#include "array.h"
-#include "polynomial.h"
-#include "rs_code.h"
+#include "src/field_settings.h"
+#include "src/finite_field.h"
+#include "src/zp_array.h"
+#include "src/polynomial.h"
+#include "src/rs_code.h"
 
 // Encode and decode using Reed Solomon codes from the command line.
 
@@ -14,8 +14,8 @@ int p = 0;
 int q = 0;
 int n = 0;
 zp_t omega = 0;
-array omegas = NULL;
-array inverses = NULL;
+zp_array omegas = NULL;
+zp_array inverses = NULL;
 
 void usage(int argc, char *argv[])
 {
@@ -31,14 +31,14 @@ void encode(int argc, char *argv[])
 {
     int block_length = atoi(argv[3]);
     int message_length = atoi(argv[4]);
-    array message = array_new(message_length);
+    zp_array message = zp_array_new(message_length);
     for (int i = 0; i < message_length; i++)
         message[i] = atoi(argv[5 + i]);
-    array codeword = rs_fast_encode(block_length, message_length, message);
+    zp_array codeword = rs_fast_encode(block_length, message_length, message);
     printf("The codeword is:\n");
-    array_print(codeword, block_length);
-    array_free(message);
-    array_free(codeword);
+    zp_array_print(codeword, block_length);
+    zp_array_free(message);
+    zp_array_free(codeword);
 }
 
 // Print in sdtout the message associate to a given received,
@@ -47,16 +47,16 @@ void decode(int argc, char *argv[])
 {
     int block_length = atoi(argv[3]);
     int message_length = atoi(argv[4]);
-    array received = array_new(block_length);
+    zp_array received = zp_array_new(block_length);
     for (int i = 0; i < block_length; i++)
         received[i] = atoi(argv[5 + i]);
     poly g_0 = poly_new();
     rs_g_0_fourier(g_0, block_length);
-    array message = rs_fast_decode(g_0, block_length, message_length, received);
+    zp_array message = rs_fast_decode(g_0, block_length, message_length, received);
     printf("The message is:\n");
-    array_print(message, message_length);
-    array_free(received);
-    array_free(message);
+    zp_array_print(message, message_length);
+    zp_array_free(received);
+    zp_array_free(message);
     poly_free(g_0);
 }
 
